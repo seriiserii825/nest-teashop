@@ -1,0 +1,32 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: teashop
+      CHARACTER_SET_SERVER: utf8mb4
+      COLLATION_SERVER: utf8mb4_general_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - '8085:80'
+    environment:
+      MAX_EXECUTION_TIME: 600
+      UPLOAD_LIMIT: 800M
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      MYSQL_ROOT_PASSWORD: root # server mysql, user root, password root
+    depends_on:
+      - mysql
+
+volumes:
+  mysql_data:
