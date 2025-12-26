@@ -39,6 +39,7 @@
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.19",
+    "dotenv-expand": "^12.0.3",
     "fs-extra": "^11.3.3",
     "mysql-promise": "^5.0.0",
     "mysql2-promise": "^0.1.4",
