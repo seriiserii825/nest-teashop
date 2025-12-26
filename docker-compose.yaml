@@ -10,6 +10,8 @@ services:
       MYSQL_DATABASE: teashop
       CHARACTER_SET_SERVER: utf8mb4
       COLLATION_SERVER: utf8mb4_general_ci
+    ports:
+      - '3306:3306' # Добавь эту строку!
     volumes:
       - mysql_data:/var/lib/mysql
 
