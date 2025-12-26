@@ -8,7 +8,13 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
+    const adapter = new PrismaMariaDb({
+      host: process.env.MYSQL_HOST || 'localhost',
+      user: process.env.MYSQL_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || 'root',
+      database: process.env.MYSQL_DB || 'teashop',
+      port: parseInt(process.env.MYSQL_PORT || '3306'),
+    });
     super({ adapter, log: ['info', 'warn', 'error'] });
   }
 
