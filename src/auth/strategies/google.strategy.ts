@@ -14,25 +14,27 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         'Google OAuth environment variables are not defined in .env',
       );
     }
+
     super({
       clientID,
       clientSecret,
-      callbackURL: callbackURL + '/auth/google/callback',
+      callbackURL, // Fixed: no extra path
       scope: ['email', 'profile'],
     });
   }
 
-  validate(accessToken: string, profile: Profile, done: VerifyCallback) {
+  validate(
+    accessToken: string,
+    refreshToken: string, // Added missing parameter
+    profile: Profile,
+    done: VerifyCallback,
+  ) {
     const { name, emails, photos } = profile;
-    if (
-      !emails ||
-      emails.length === 0 ||
-      !photos ||
-      photos.length === 0 ||
-      !name
-    ) {
+
+    if (!emails?.length || !photos?.length || !name) {
       return done(new Error('No sufficient information from Google account'));
     }
+
     const user = {
       email: emails[0].value,
       firstName: name.givenName,
@@ -40,6 +42,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       picture: photos[0].value,
       accessToken,
     };
+
     done(null, user);
   }
 }
+
+// http://localhost:3344/auth/google/callback

@@ -48,8 +48,7 @@ export class AuthService {
         password: dto.password,
       },
     });
-    const tokens = this.issueTokens(user.id);
-    return { user, ...tokens };
+    return user;
   }
 
   async getNewTokens(refreshToken: string): Promise<{
