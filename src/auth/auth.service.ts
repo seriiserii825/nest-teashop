@@ -7,13 +7,30 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { User } from 'src/generated/prisma/client';
+
+interface OAuthUser {
+  email: string;
+  name: string;
+  picture: string;
+}
+
+interface OAuthRequest {
+  user: OAuthUser;
+}
 
 @Injectable()
 export class AuthService {
+  EXPIRES_DAY_REFRESH_TOKEN = 1;
+  REFRESH_TOKEN_NAME = 'refreshToken';
+
   constructor(
     private jwt: JwtService,
     private userService: UserService,
     private prisma: PrismaService,
+    private configService: ConfigService,
   ) {}
   async login(dto: AuthDto) {
     const user = await this.validateUser(dto);
@@ -35,6 +52,21 @@ export class AuthService {
     return { user, ...tokens };
   }
 
+  async getNewTokens(refreshToken: string): Promise<{
+    user: any;
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    const tokenIsValid: { id: string } =
+      await this.jwt.verifyAsync(refreshToken);
+    if (!tokenIsValid) throw new BadRequestException('Invalid refresh token');
+
+    const user = await this.userService.getById(tokenIsValid['id']);
+    if (!user) throw new NotFoundException('User not found');
+    const tokens = this.issueTokens(user.id);
+    return { user, ...tokens };
+  }
+
   issueTokens(userId: string) {
     const payload = { id: userId };
     const accessToken = this.jwt.sign(payload, {
@@ -48,11 +80,56 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  async validateOAuthLogin(req: unknown) {
+    if (!req || typeof req !== 'object' || !('user' in req) || !req.user) {
+      throw new BadRequestException('No user from OAuth provider');
+    }
+
+    const oauthReq = req as OAuthRequest;
+    const user = await this.userService.getByEmail(oauthReq.user.email);
+    let new_user: User | null = null;
+    if (!user) {
+      new_user = await this.prisma.user.create({
+        data: {
+          email: oauthReq.user.email,
+          name: oauthReq.user.name,
+          picture: oauthReq.user.picture,
+        },
+      });
+      const tokens = this.issueTokens(new_user.id);
+      return { user: new_user, ...tokens };
+    }
+    const tokens = this.issueTokens(user.id);
+    return { user, ...tokens };
+  }
+
   private async validateUser(dto: AuthDto) {
     const user = await this.userService.getByEmail(dto.email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return user;
+  }
+
+  addRefreshTokenToResponse(res: Response, refreshToken: string) {
+    const expires_in = new Date();
+    expires_in.setDate(expires_in.getDate() + this.EXPIRES_DAY_REFRESH_TOKEN);
+    res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
+      httpOnly: true,
+      domain: this.configService.get<string>('SERVER_DOMAIN'),
+      expires: expires_in,
+      secure: true,
+      sameSite: 'lax',
+    });
+  }
+
+  removeRefreshTokenFromResponse(res: Response) {
+    res.cookie(this.REFRESH_TOKEN_NAME, '', {
+      httpOnly: true,
+      domain: this.configService.get<string>('SERVER_DOMAIN'),
+      expires: new Date(0),
+      secure: true,
+      sameSite: 'lax',
+    });
   }
 }
