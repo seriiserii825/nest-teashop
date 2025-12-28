@@ -1,7 +1,17 @@
-import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import type { Request, Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -46,5 +56,23 @@ export class AuthController {
   @Post('logout')
   logout(@Res({ passthrough: true }) res: Response) {
     this.authService.removeRefreshTokenFromResponse(res);
+  }
+
+  @UseGuards(AuthGuard('google'))
+  @Get('google')
+  async googleAuth(@Req() _req: any) {}
+
+  @UseGuards(AuthGuard('google'))
+  @Get('google/callback')
+  async googleAuthCallback(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { refreshToken, ...response } =
+      await this.authService.validateOAuthLogin(req);
+    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    return res.redirect(
+      `${process.env.CLIENT_URL}/dashboard?accessToken${response.accessToken}`,
+    );
   }
 }
