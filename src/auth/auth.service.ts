@@ -4,12 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/generated/prisma/client';
+import { User } from 'src/entities/user.entity';
 
 interface OAuthUser {
   email: string;
@@ -29,7 +28,6 @@ export class AuthService {
   constructor(
     private jwt: JwtService,
     private userService: UserService,
-    private prisma: PrismaService,
     private configService: ConfigService,
   ) {}
   async login(dto: AuthDto) {
@@ -42,12 +40,7 @@ export class AuthService {
     if (oldUser) {
       throw new BadRequestException('User already exists');
     }
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: dto.password,
-      },
-    });
+    const user = await this.userService.create(dto);
     return user;
   }
 
@@ -88,12 +81,10 @@ export class AuthService {
     const user = await this.userService.getByEmail(oauthReq.user.email);
     let new_user: User | null = null;
     if (!user) {
-      new_user = await this.prisma.user.create({
-        data: {
-          email: oauthReq.user.email,
-          name: oauthReq.user.name,
-          picture: oauthReq.user.picture,
-        },
+      new_user = await this.userService.create({
+        email: oauthReq.user.email,
+        name: oauthReq.user.name,
+        picture: oauthReq.user.picture,
       });
       const tokens = this.issueTokens(new_user.id);
       return { user: new_user, ...tokens };
@@ -104,6 +95,7 @@ export class AuthService {
 
   private async validateUser(dto: AuthDto) {
     const user = await this.userService.getByEmail(dto.email);
+    console.log('user', user);
     if (!user) {
       throw new NotFoundException('User not found');
     }

@@ -11,5 +11,9 @@ export class AuthDto {
   @IsString()
   @IsOptional()
   @MinLength(6)
-  password: string;
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  picture?: string;
 }

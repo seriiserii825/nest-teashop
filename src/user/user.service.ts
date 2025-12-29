@@ -1,37 +1,46 @@
 import { Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/auth/dto/auth.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
 
 import { hash } from 'argon2';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+  ) {}
+
+  async getAll() {
+    const users = await this.userRepository.find();
+    return users;
+  }
 
   async getById(id: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { id },
-      include: { stores: true, orders: true, favorites: true },
+      relations: ['stores', 'orders', 'favorites'],
     });
     return user;
   }
 
   async getByEmail(email: string) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.userRepository.findOne({
       where: { email },
-      include: { stores: true, orders: true, favorites: true },
+      relations: ['stores', 'orders', 'favorites'],
     });
     return user;
   }
 
   async create(dto: AuthDto) {
-    const user = await this.prisma.user.create({
-      data: {
-        name: dto.name,
-        email: dto.email,
-        password: await hash(dto.password),
-      },
+    const user = this.userRepository.create({
+      name: dto.name,
+      email: dto.email,
+      password: dto.password ? await hash(dto.password) : undefined,
+      picture: dto.picture || undefined,
     });
+    await this.userRepository.save(user);
     return user;
   }
 }
