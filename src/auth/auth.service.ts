@@ -20,6 +20,10 @@ interface OAuthRequest {
   user: OAuthUser;
 }
 
+interface IJwtPayload {
+  sub: string;
+}
+
 @Injectable()
 export class AuthService {
   EXPIRES_DAY_REFRESH_TOKEN = 1;
@@ -49,26 +53,30 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   }> {
-    const tokenIsValid: { id: string } =
-      await this.jwt.verifyAsync(refreshToken);
+    const tokenIsValid: IJwtPayload = await this.jwt.verifyAsync(refreshToken); // ✅ Изменили на 'sub'
+
     if (!tokenIsValid) throw new BadRequestException('Invalid refresh token');
 
-    const user = await this.userService.getById(tokenIsValid['id']);
+    const user = await this.userService.getById(tokenIsValid.sub); // ✅ Используем 'sub'
     if (!user) throw new NotFoundException('User not found');
+
     const tokens = this.issueTokens(user.id);
     return { user, ...tokens };
   }
 
   issueTokens(userId: string) {
-    const payload = { id: userId };
+    const payload: IJwtPayload = { sub: userId }; // ✅ Используем 'sub'
+
     const accessToken = this.jwt.sign(payload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '15m',
     });
+
     const refreshToken = this.jwt.sign(payload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '7d',
     });
+
     return { accessToken, refreshToken };
   }
 

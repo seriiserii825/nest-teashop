@@ -16,7 +16,7 @@ export const dataSourceOptions: DataSourceOptions & SeederOptions = {
   migrationsRun: false, // Установите true если хотите автозапуск при старте
   // seeds: ['dist/src/db/seeders/*.js'],
   synchronize: false,
-  logging: true,
+  logging: false,
 };
 
 const dataSource = new DataSource(dataSourceOptions);
