@@ -12,7 +12,7 @@ export const dataSourceOptions: DataSourceOptions & SeederOptions = {
   password: process.env.DB_PASSWORD || 'serii1981',
   database: process.env.DB_NAME || 'taskmanagment',
   entities: ['dist/**/*.entity.js'],
-  // migrations: ['dist/db/migrations/*.js'],
+  migrations: ['dist/migrations/*.js'],
   // seeds: ['dist/src/db/seeders/*.js'],
   synchronize: false,
   logging: true,
