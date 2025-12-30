@@ -6,8 +6,7 @@ export class LoginResponseDto {
   user: UserDataDto;
 
   @ApiProperty({
-    example:
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkZTQyMzFjNC05NGQ4LTRkYzAtYTY1YS05MTc3Yjk3ZjRhNjEiLCJpYXQiOjE3NjcwODQ5NzYsImV4cCI6MTc2NzA4NTg3Nn0.PNhZ5reIDdV0f9VMXmt-MMKmkCPDr3L2kHuYfQ_g9i4',
+    example: 'my-token',
   })
   accessToken: string;
 }
