@@ -48,8 +48,9 @@ export class ColorService {
   }
 
   async remove(colorId: string) {
-    await this.findById(colorId);
-    return this.colorRepository.delete(colorId);
+    const color = await this.findById(colorId);
+    await this.colorRepository.delete(colorId);
+    return color;
   }
 
   async checkDuplicateNameInStore(storeId: string, name: string) {
