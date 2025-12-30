@@ -5,11 +5,13 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
-import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
 import { exclude } from 'src/utils/exclude-fields';
+import { verify } from 'argon2';
+import { AuthLoginDto } from './dto/auth-login.dto';
+import { AuthRegisterDto } from './dto/auth-register.dto';
 
 interface OAuthUser {
   email: string;
@@ -35,12 +37,12 @@ export class AuthService {
     private userService: UserService,
     private configService: ConfigService,
   ) {}
-  async login(dto: AuthDto) {
+  async login(dto: AuthLoginDto) {
     const user = await this.validateUser(dto);
     const tokens = this.issueTokens(user.id);
     return { user, ...tokens };
   }
-  async register(dto: AuthDto) {
+  async register(dto: AuthRegisterDto) {
     const oldUser = await this.userService.getByEmail(dto.email);
     if (oldUser) {
       throw new BadRequestException('User already exists');
@@ -103,11 +105,18 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  private async validateUser(dto: AuthDto) {
+  private async validateUser(dto: AuthLoginDto): Promise<User> {
     const user = await this.userService.getByEmail(dto.email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    const isPasswordValid = await verify(user.password, dto.password);
+    console.log('isPasswordValid', isPasswordValid);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid password');
+    }
+
     return user;
   }
 
