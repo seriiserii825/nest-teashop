@@ -46,7 +46,7 @@ export class UserService {
     return user;
   }
 
-  async toggleFavoriteProduct(userId: string, productId: string) {
+  async toggleFavorite(userId: string, productId: string) {
     const user = await this.getById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
