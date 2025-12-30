@@ -11,9 +11,6 @@ import {
 import { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBody, ApiResponse } from '@nestjs/swagger';
-import { CustomApiBadRequestResponse } from 'src/common/decorators/api-responses.decorator';
-import { AuthRegisterResponseDto } from './dto/auth-register-response.dto';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthLoginDto } from './dto/auth-login.dto';
 
@@ -21,25 +18,12 @@ import { AuthLoginDto } from './dto/auth-login.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiBody({ type: AuthRegisterDto })
-  @CustomApiBadRequestResponse('Invalid credentials or user already exists')
-  @ApiResponse({
-    status: 201,
-    description: 'User registered successfully',
-    type: AuthRegisterResponseDto,
-  })
   @Post('register')
   register(@Body() dto: AuthRegisterDto) {
     return this.authService.register(dto);
   }
 
   @HttpCode(200)
-  @ApiBody({ type: AuthLoginDto })
-  @ApiResponse({
-    status: 200,
-    description: 'User logged in successfully',
-    type: AuthRegisterResponseDto,
-  })
   @Post('login')
   async login(
     @Body() dto: AuthLoginDto,
