@@ -15,12 +15,7 @@ export class StoreService {
     @InjectRepository(Store) private storeRepository: Repository<Store>,
   ) {}
   async create(userId: string, createStoreDto: CreateStoreDto): Promise<Store> {
-    const old_store = await this.storeRepository.findOne({
-      where: { user: { id: userId }, title: createStoreDto.title },
-    });
-    if (old_store) {
-      throw new BadRequestException('Store with this title already exists');
-    }
+    await this.haveDuplicateTitle(userId, createStoreDto.title);
     const newStore = this.storeRepository.create({
       ...createStoreDto,
       user: { id: userId },
@@ -29,7 +24,9 @@ export class StoreService {
   }
 
   findAll(): Promise<Store[]> {
-    return this.storeRepository.find();
+    return this.storeRepository.find({
+      order: { updatedAt: 'DESC' },
+    });
   }
 
   async findById(store_id: string, user_id: string): Promise<Store> {
@@ -46,6 +43,8 @@ export class StoreService {
     id: string,
     updateStoreDto: UpdateStoreDto,
   ): Promise<Store> {
+    await this.haveDuplicateTitle(userId, updateStoreDto.title);
+
     const store = await this.findById(id, userId);
 
     Object.assign(store, updateStoreDto);
@@ -55,5 +54,14 @@ export class StoreService {
   async remove(user_id: string, id: string): Promise<Store> {
     const store = await this.findById(id, user_id);
     return this.storeRepository.remove(store);
+  }
+
+  async haveDuplicateTitle(userId: string, title: string): Promise<void> {
+    const store = await this.storeRepository.findOne({
+      where: { user: { id: userId }, title },
+    });
+    if (store) {
+      throw new BadRequestException('Store with this title already exists');
+    }
   }
 }
