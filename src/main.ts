@@ -26,18 +26,36 @@ async function bootstrap() {
     credentials: true,
     exposedHeaders: ['set-cookie'],
   });
+
   const config = new DocumentBuilder()
     .setTitle('Shop API')
-    .setDescription('The shop API description')
+    .setDescription('API for managing shops')
     .setVersion('1.0')
-    .addTag('shop')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth', // This name here is important for later reference
+    )
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory, {
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
-      docExpansion: 'none',
+      docExpansion: 'none', // All routes collapsed
+      persistAuthorization: true, // Keeps auth token on refresh
+      filter: true, // Enables search box
+      tagsSorter: 'alpha', // Sorts tags alphabetically
+      operationsSorter: 'alpha', // Sorts operations alphabetically
     },
   });
+
   await app.listen(process.env.PORT ?? 3344);
 }
 bootstrap().catch((err) => {

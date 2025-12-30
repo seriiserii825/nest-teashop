@@ -6,16 +6,26 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { CustomApiUnauthorizedResponse } from 'src/common/decorators/api-responses.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@Auth()
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard)
+@CustomApiUnauthorizedResponse()
 @Controller('stores')
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
+  @ApiBody({ type: CreateStoreDto })
   @Post()
   create(
     @CurrentUser('id') user_id: string,

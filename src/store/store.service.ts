@@ -19,7 +19,7 @@ export class StoreService {
   }
 
   findAll() {
-    return `This action returns all store`;
+    return this.storeRepository.find();
   }
 
   async findById(store_id: string, user_id: string) {

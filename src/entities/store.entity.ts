@@ -7,6 +7,7 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Unique,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Product } from './product.entity';
@@ -15,6 +16,7 @@ import { Color } from './color.entity';
 import { Review } from './review.entity';
 import { OrderItem } from './order-item.entity';
 
+@Unique(['title', 'userId'])
 @Entity('stores')
 export class Store {
   @PrimaryGeneratedColumn('uuid')

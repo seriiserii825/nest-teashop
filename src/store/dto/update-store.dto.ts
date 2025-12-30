@@ -4,5 +4,5 @@ import { IsString } from 'class-validator';
 
 export class UpdateStoreDto extends PartialType(CreateStoreDto) {
   @IsString()
-  title: string;
+  description: string;
 }
