@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from './config/data-source';
 import { ProductModule } from './product/product.module';
 import { StoreModule } from './store/store.module';
+import { ColorModule } from './color/color.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { StoreModule } from './store/store.module';
     UserModule,
     ProductModule,
     StoreModule,
+    ColorModule,
   ],
 })
 export class AppModule {}
