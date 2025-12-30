@@ -11,7 +11,6 @@ import {
 } from 'typeorm';
 import { Product } from './product.entity';
 import { Store } from './store.entity';
-import { Matches } from 'class-validator';
 
 @Unique(['name', 'storeId'])
 @Entity('colors')
@@ -28,9 +27,6 @@ export class Color {
   @Column()
   name: string;
 
-  @Matches(/^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/, {
-    message: 'value must be a valid hex color code',
-  })
   @Column()
   value: string;
 
