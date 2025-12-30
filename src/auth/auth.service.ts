@@ -46,7 +46,8 @@ export class AuthService {
       throw new BadRequestException('User already exists');
     }
     const user = await this.userService.create(dto);
-    return exclude(user, 'password');
+    const new_user = exclude(user, 'password');
+    return { user: new_user };
   }
 
   async getNewTokens(refreshToken: string): Promise<{
@@ -104,7 +105,6 @@ export class AuthService {
 
   private async validateUser(dto: AuthDto) {
     const user = await this.userService.getByEmail(dto.email);
-    console.log('user', user);
     if (!user) {
       throw new NotFoundException('User not found');
     }

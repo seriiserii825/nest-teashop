@@ -33,6 +33,12 @@ export class AuthController {
   }
 
   @HttpCode(200)
+  @ApiBody({ type: AuthDto })
+  @ApiResponse({
+    status: 200,
+    description: 'User logged in successfully',
+    type: AuthRegisterResponseDto,
+  })
   @Post('login')
   async login(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
     const { refreshToken, ...response } = await this.authService.login(dto);

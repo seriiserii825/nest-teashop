@@ -33,7 +33,11 @@ async function bootstrap() {
     .addTag('shop')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory, {
+    swaggerOptions: {
+      docExpansion: 'none',
+    },
+  });
   await app.listen(process.env.PORT ?? 3344);
 }
 bootstrap().catch((err) => {
