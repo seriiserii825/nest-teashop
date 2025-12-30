@@ -14,7 +14,7 @@ export class StoreService {
   constructor(
     @InjectRepository(Store) private storeRepository: Repository<Store>,
   ) {}
-  async create(userId: string, createStoreDto: CreateStoreDto) {
+  async create(userId: string, createStoreDto: CreateStoreDto): Promise<Store> {
     const old_store = await this.storeRepository.findOne({
       where: { user: { id: userId }, title: createStoreDto.title },
     });
@@ -28,11 +28,11 @@ export class StoreService {
     return this.storeRepository.save(newStore);
   }
 
-  findAll() {
+  findAll(): Promise<Store[]> {
     return this.storeRepository.find();
   }
 
-  async findById(store_id: string, user_id: string) {
+  async findById(store_id: string, user_id: string): Promise<Store> {
     const store = await this.storeRepository.findOne({
       where: { id: store_id, user: { id: user_id } },
     });
@@ -41,14 +41,18 @@ export class StoreService {
     return store;
   }
 
-  async update(userId: string, id: string, updateStoreDto: UpdateStoreDto) {
+  async update(
+    userId: string,
+    id: string,
+    updateStoreDto: UpdateStoreDto,
+  ): Promise<Store> {
     const store = await this.findById(id, userId);
 
     Object.assign(store, updateStoreDto);
     return this.storeRepository.save(store);
   }
 
-  async remove(user_id: string, id: string) {
+  async remove(user_id: string, id: string): Promise<Store> {
     const store = await this.findById(id, user_id);
     return this.storeRepository.remove(store);
   }

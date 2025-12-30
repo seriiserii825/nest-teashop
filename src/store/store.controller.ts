@@ -14,6 +14,7 @@ import { UpdateStoreDto } from './dto/update-store.dto';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Store } from 'src/entities/store.entity';
 @Auth()
 @UseGuards(JwtAuthGuard)
 @Controller('stores')
@@ -24,17 +25,20 @@ export class StoreController {
   create(
     @CurrentUser('id') user_id: string,
     @Body() createStoreDto: CreateStoreDto,
-  ) {
+  ): Promise<Store> {
     return this.storeService.create(user_id, createStoreDto);
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<Store[]> {
     return this.storeService.findAll();
   }
 
   @Get(':id')
-  findOne(@CurrentUser('id') user_id: string, @Param('id') store_id: string) {
+  findOne(
+    @CurrentUser('id') user_id: string,
+    @Param('id') store_id: string,
+  ): Promise<Store> {
     return this.storeService.findById(store_id, user_id);
   }
 
@@ -43,12 +47,15 @@ export class StoreController {
     @CurrentUser('id') userId: string,
     @Param('id') id: string,
     @Body() updateStoreDto: UpdateStoreDto,
-  ) {
+  ): Promise<Store> {
     return this.storeService.update(userId, id, updateStoreDto);
   }
 
   @Delete(':id')
-  remove(@CurrentUser('id') user_id: string, @Param('id') id: string) {
+  remove(
+    @CurrentUser('id') user_id: string,
+    @Param('id') id: string,
+  ): Promise<Store> {
     return this.storeService.remove(user_id, id);
   }
 }
