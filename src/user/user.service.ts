@@ -6,6 +6,7 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Product } from 'src/entities/product.entity';
 import { AuthRegisterDto } from 'src/auth/dto/auth-register.dto';
+import { IUserFavorite } from './interfaces/IUserFavorite';
 
 @Injectable()
 export class UserService {
@@ -14,28 +15,34 @@ export class UserService {
     @InjectRepository(Product) private productRepository: Repository<Product>,
   ) {}
 
-  async getAll() {
+  async getAll(): Promise<User[]> {
     const users = await this.userRepository.find();
     return users;
   }
 
-  async getById(id: string) {
+  async getById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['stores', 'orders', 'favorites'],
     });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return user;
   }
 
-  async getByEmail(email: string) {
+  async getByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { email },
       relations: ['stores', 'orders', 'favorites'],
     });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     return user;
   }
 
-  async create(dto: AuthRegisterDto) {
+  async create(dto: AuthRegisterDto): Promise<User> {
     const user = this.userRepository.create({
       name: dto.name,
       email: dto.email,
@@ -46,7 +53,10 @@ export class UserService {
     return user;
   }
 
-  async toggleFavorite(userId: string, productId: string) {
+  async toggleFavorite(
+    userId: string,
+    productId: string,
+  ): Promise<IUserFavorite> {
     const user = await this.getById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
