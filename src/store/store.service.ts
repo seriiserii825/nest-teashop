@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,7 +14,13 @@ export class StoreService {
   constructor(
     @InjectRepository(Store) private storeRepository: Repository<Store>,
   ) {}
-  create(userId: string, createStoreDto: CreateStoreDto) {
+  async create(userId: string, createStoreDto: CreateStoreDto) {
+    const old_store = await this.storeRepository.findOne({
+      where: { user: { id: userId }, title: createStoreDto.title },
+    });
+    if (old_store) {
+      throw new BadRequestException('Store with this title already exists');
+    }
     const newStore = this.storeRepository.create({
       ...createStoreDto,
       user: { id: userId },
