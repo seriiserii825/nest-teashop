@@ -7,6 +7,7 @@ import { dataSourceOptions } from './config/data-source';
 import { ProductModule } from './product/product.module';
 import { StoreModule } from './store/store.module';
 import { ColorModule } from './color/color.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ColorModule } from './color/color.module';
     ProductModule,
     StoreModule,
     ColorModule,
+    CategoryModule,
   ],
 })
 export class AppModule {}
