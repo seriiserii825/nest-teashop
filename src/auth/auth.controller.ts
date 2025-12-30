@@ -12,11 +12,21 @@ import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import type { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBody, ApiResponse } from '@nestjs/swagger';
+import { CustomApiBadRequestResponse } from 'src/common/decorators/api-responses.decorator';
+import { AuthRegisterResponseDto } from './dto/auth-register-response.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiBody({ type: AuthDto })
+  @CustomApiBadRequestResponse('Invalid credentials or user already exists')
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+    type: AuthRegisterResponseDto,
+  })
   @Post('register')
   register(@Body() dto: AuthDto) {
     return this.authService.register(dto);

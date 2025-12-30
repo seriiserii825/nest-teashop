@@ -9,6 +9,7 @@ import { AuthDto } from './dto/auth.dto';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { User } from 'src/entities/user.entity';
+import { exclude } from 'src/utils/exclude-fields';
 
 interface OAuthUser {
   email: string;
@@ -45,7 +46,7 @@ export class AuthService {
       throw new BadRequestException('User already exists');
     }
     const user = await this.userService.create(dto);
-    return user;
+    return exclude(user, 'password');
   }
 
   async getNewTokens(refreshToken: string): Promise<{
@@ -65,7 +66,7 @@ export class AuthService {
   }
 
   issueTokens(userId: string) {
-    const payload: IJwtPayload = { sub: userId }; // ✅ Используем 'sub'
+    const payload = { sub: userId }; // ✅ Используем 'sub'
 
     const accessToken = this.jwt.sign(payload, {
       secret: process.env.JWT_SECRET,
