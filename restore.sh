@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Загрузить переменные из .env
 if [ -f .env ]; then
     export $(cat .env | grep -v '^#' | xargs)
@@ -13,21 +12,48 @@ CONTAINER_NAME=$(docker ps --filter "name=postgres" --format "{{.Names}}" | head
 DB_USER="${DB_USERNAME}"
 DB_NAME="${DB_NAME}"
 
-if [ -z "$1" ]; then
-    echo "Usage: ./restore.sh <backup_file>"
-    echo ""
-    echo "Available backups:"
-    ls -lht ./backups/backup_*.sql.gz | head -n 10
+# Check if fzf is installed
+if ! command -v fzf &> /dev/null; then
+    echo "Error: fzf is not installed!"
+    echo "Install it with: sudo apt install fzf (Debian/Ubuntu) or brew install fzf (macOS)"
     exit 1
 fi
 
-BACKUP_FILE=$1
+# Check if backups directory exists
+if [ ! -d "./backups" ]; then
+    echo "Error: ./backups directory not found!"
+    exit 1
+fi
 
+# Check if there are any backups
+if [ -z "$(ls -A ./backups/backup_*.sql.gz 2>/dev/null)" ]; then
+    echo "Error: No backup files found in ./backups/"
+    exit 1
+fi
+
+# Use fzf to select backup file
+echo "Select a backup file to restore:"
+BACKUP_FILE=$(ls -t ./backups/backup_*.sql.gz | fzf \
+    --height=40% \
+    --reverse \
+    --border \
+    --prompt="Select backup: " \
+    --preview="echo 'File: {}'; echo ''; ls -lh {}; echo ''; echo 'Created:'; stat -c '%y' {} 2>/dev/null || stat -f '%Sm' {}" \
+    --preview-window=right:50%)
+
+# Check if user cancelled selection
+if [ -z "$BACKUP_FILE" ]; then
+    echo "No backup selected. Exiting."
+    exit 0
+fi
+
+# Validate selected file
 if [ ! -f "$BACKUP_FILE" ]; then
     echo "Error: Backup file not found: $BACKUP_FILE"
     exit 1
 fi
 
+echo ""
 echo "Database: $DB_NAME"
 echo "Container: $CONTAINER_NAME"
 echo "Backup file: $BACKUP_FILE"
