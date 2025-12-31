@@ -21,11 +21,10 @@ export class FileController {
 
   @HttpCode(200)
   @Post()
-  async uploadFiles(
+  uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],
     @Query('folder') folder?: string,
   ) {
-    return 'File upload endpoint is under construction.';
-    // return this.fileService.uploadFiles(files, folder);
+    return this.fileService.uploadFiles(files, folder);
   }
 }
