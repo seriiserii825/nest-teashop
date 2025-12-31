@@ -45,20 +45,23 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException(`Product with ID '${id}' not found.`);
     }
+    return product;
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    // const product = await this.findById(id);
-    // if (
-    //   updateProductDto.title &&
-    //   updateProductDto.title !== product.title &&
-    //   product.storeId
-    // ) {
-    //   await this.checkDuplicateTitleInStore(
-    //     product.storeId,
-    //     updateProductDto.title,
-    //   );
-    // }
+    const product = await this.findById(id);
+    if (
+      updateProductDto.title &&
+      updateProductDto.title !== product.title &&
+      product.storeId
+    ) {
+      await this.checkDuplicateTitleInStore(
+        product.storeId,
+        updateProductDto.title,
+      );
+    }
+    Object.assign(product, updateProductDto);
+    return this.productRepository.save(product);
   }
 
   remove(id: number) {
