@@ -10,4 +10,12 @@ export class CreateReviewDto {
   @Max(5)
   @IsNotEmpty()
   rating: number;
+
+  @IsString()
+  @IsNotEmpty()
+  productId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 }

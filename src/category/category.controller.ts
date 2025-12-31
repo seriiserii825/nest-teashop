@@ -18,7 +18,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @Post(':storeId')
+  @Post('store/:storeId')
   create(
     @Body() createCategoryDto: CreateCategoryDto,
     @Param('storeId') storeId: string,
