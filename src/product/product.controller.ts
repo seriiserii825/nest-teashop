@@ -16,13 +16,16 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Auth()
 @UseGuards(JwtAuthGuard)
-@Controller('product')
+@Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  @Post('store/:storeId')
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @Param('storeId') storeId: string,
+  ) {
+    return this.productService.create(storeId, createProductDto);
   }
 
   @Get()

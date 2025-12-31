@@ -36,7 +36,7 @@ export class Product {
   price: number;
 
   @Column('json')
-  images: any;
+  images: string[];
 
   @Column({ name: 'store_id' })
   storeId: string;

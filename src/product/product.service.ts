@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadGatewayException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,9 +11,14 @@ export class ProductService {
     @InjectRepository(Product) private productRepository: Repository<Product>,
   ) {}
 
-  create(createProductDto: CreateProductDto) {
-    console.log(createProductDto);
-    return 'This action adds a new product';
+  async create(storeId: string, createProductDto: CreateProductDto) {
+    await this.checkDuplicateTitleInStore(storeId, createProductDto.title);
+
+    const newProduct = this.productRepository.create({
+      ...createProductDto,
+      storeId,
+    });
+    return this.productRepository.save(newProduct);
   }
 
   findAll() {
@@ -32,5 +37,16 @@ export class ProductService {
 
   remove(id: number) {
     return `This action removes a #${id} product`;
+  }
+
+  async checkDuplicateTitleInStore(storeId: string, title: string) {
+    const count = await this.productRepository.count({
+      where: { storeId, title },
+    });
+    if (count > 0) {
+      throw new BadGatewayException(
+        `Product with title '${title}' already exists in this store.`,
+      );
+    }
   }
 }

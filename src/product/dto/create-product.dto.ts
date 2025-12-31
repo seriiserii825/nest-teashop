@@ -20,10 +20,6 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
-  storeId: string;
-
-  @IsString()
-  @IsNotEmpty()
   categoryId?: string;
 
   @IsString()
