@@ -6,17 +6,14 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from 'src/entities/category.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Auth()
-@UseGuards(JwtAuthGuard)
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

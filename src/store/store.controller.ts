@@ -6,18 +6,15 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Store } from 'src/entities/store.entity';
 
 @Auth()
-@UseGuards(JwtAuthGuard)
 @Controller('stores')
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}

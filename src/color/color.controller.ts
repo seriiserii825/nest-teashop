@@ -6,17 +6,14 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
 } from '@nestjs/common';
 import { ColorService } from './color.service';
 import { CreateColorDto } from './dto/create-color.dto';
 import { UpdateColorDto } from './dto/update-color.dto';
 import { Color } from 'src/entities/color.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Auth()
-@UseGuards(JwtAuthGuard)
 @Controller('colors')
 export class ColorController {
   constructor(private readonly colorService: ColorService) {}
