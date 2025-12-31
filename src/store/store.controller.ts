@@ -15,6 +15,7 @@ import { CurrentUser } from 'src/user/decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Store } from 'src/entities/store.entity';
+
 @Auth()
 @UseGuards(JwtAuthGuard)
 @Controller('stores')
