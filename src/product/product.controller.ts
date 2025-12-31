@@ -35,6 +35,11 @@ export class ProductController {
     return this.productService.findAllByStoreID(storeId);
   }
 
+  @Get('search/:searchTerm')
+  findBySearchTerm(@Param('searchTerm') searchTerm: string) {
+    return this.productService.findBySearchTerm(searchTerm);
+  }
+
   @Get('category/:categoryId')
   findAllByCategoryID(@Param('categoryId') categoryId: string) {
     return this.productService.findAllByCategoryID(categoryId);

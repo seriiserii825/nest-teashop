@@ -38,6 +38,16 @@ export class ProductService {
     });
   }
 
+  findBySearchTerm(searchTerm: string): Promise<Product[]> {
+    return this.productRepository
+      .createQueryBuilder('product')
+      .where('product.title ILIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
+      })
+      .orderBy('product.updatedAt', 'DESC')
+      .getMany();
+  }
+
   async findAllByCategoryID(categoryId: string) {
     const products = await this.productRepository.find({
       where: { categoryId },
