@@ -1,4 +1,8 @@
-import { BadGatewayException, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,14 +31,34 @@ export class ProductService {
     });
   }
 
-  findById(id: string) {
-    return this.productRepository.findOne({
-      where: { id: id },
+  findAllByStoreID(storeId: string) {
+    return this.productRepository.find({
+      where: { storeId },
+      order: { updatedAt: 'DESC' },
     });
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async findById(id: string) {
+    const product = await this.productRepository.findOne({
+      where: { id: id },
+    });
+    if (!product) {
+      throw new NotFoundException(`Product with ID '${id}' not found.`);
+    }
+  }
+
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    // const product = await this.findById(id);
+    // if (
+    //   updateProductDto.title &&
+    //   updateProductDto.title !== product.title &&
+    //   product.storeId
+    // ) {
+    //   await this.checkDuplicateTitleInStore(
+    //     product.storeId,
+    //     updateProductDto.title,
+    //   );
+    // }
   }
 
   remove(id: number) {
