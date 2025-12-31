@@ -38,6 +38,15 @@ export class ProductService {
     });
   }
 
+  async findAllByCategoryID(categoryId: string) {
+    const products = await this.productRepository.find({
+      where: { categoryId },
+      order: { updatedAt: 'DESC' },
+    });
+
+    return products;
+  }
+
   async findById(id: string) {
     const product = await this.productRepository.findOne({
       where: { id: id },
@@ -64,8 +73,9 @@ export class ProductService {
     return this.productRepository.save(product);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    await this.findById(id);
+    return this.productRepository.delete(id);
   }
 
   async checkDuplicateTitleInStore(storeId: string, title: string) {

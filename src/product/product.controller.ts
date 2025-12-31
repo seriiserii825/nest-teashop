@@ -38,6 +38,11 @@ export class ProductController {
     return this.productService.findAllByStoreID(storeId);
   }
 
+  @Get('category/:categoryId')
+  findAllByCategoryID(@Param('categoryId') categoryId: string) {
+    return this.productService.findAllByCategoryID(categoryId);
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.productService.findById(id);
@@ -50,6 +55,6 @@ export class ProductController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+    return this.productService.remove(id);
   }
 }
