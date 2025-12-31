@@ -21,7 +21,16 @@ export class ReviewService {
   }
 
   findAll() {
-    return `This action returns all review`;
+    return this.reviewRepository.find({
+      order: { updatedAt: 'DESC' },
+    });
+  }
+
+  findByStoreId(storeId: string) {
+    return this.reviewRepository.find({
+      where: { storeId },
+      order: { updatedAt: 'DESC' },
+    });
   }
 
   findOne(id: number) {

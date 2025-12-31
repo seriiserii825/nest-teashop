@@ -30,6 +30,11 @@ export class ReviewController {
     return this.reviewService.findAll();
   }
 
+  @Get('store/:storeId')
+  findByStoreId(@Param('storeId') storeId: string) {
+    return this.reviewService.findByStoreId(storeId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.reviewService.findOne(+id);
