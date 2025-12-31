@@ -22,10 +22,12 @@ export class ProductService {
   }
 
   findAll() {
-    return `This action returns all product`;
+    return this.productRepository.find({
+      order: { updatedAt: 'DESC' },
+    });
   }
 
-  findOne(id: string) {
+  findById(id: string) {
     return this.productRepository.findOne({
       where: { id: id },
     });
