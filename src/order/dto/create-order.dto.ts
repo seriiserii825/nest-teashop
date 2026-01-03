@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 
 enum OrderStatus {
@@ -13,16 +14,7 @@ enum OrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export class CreateOrderDto {
-  @IsOptional()
-  @IsEnum(OrderStatus)
-  status: OrderStatus;
-
-  @IsArray({ each: true })
-  @Type(() => OrderItemDto)
-  items: OrderItemDto[];
-}
-
+// OrderItemDto должен быть ПЕРЕД CreateOrderDto
 export class OrderItemDto {
   @IsNumber()
   quantity: number;
@@ -35,4 +27,15 @@ export class OrderItemDto {
 
   @IsString()
   storeId: string;
+}
+
+export class CreateOrderDto {
+  @IsOptional()
+  @IsEnum(OrderStatus)
+  status: OrderStatus;
+
+  @IsArray()
+  @ValidateNested({ each: true }) // ValidateNested, не IsArray с each
+  @Type(() => OrderItemDto)
+  items: OrderItemDto[];
 }
