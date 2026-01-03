@@ -6,8 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-"start:server": "pm2 start dist/main.js --name nest-teashop && pm2 save && pm2 startup",
-    "update": "git pull && bun run build && pm2 restart nest-api",
+    "start:server": "pm2 start dist/main.js --name nest-teashop && pm2 save && pm2 startup",
+    "update": "git pull && bun run build && pm2 restart nest-teashop",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
