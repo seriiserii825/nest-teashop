@@ -3,6 +3,8 @@
 /node_modules
 /build
 bun.lock
+.env.development
+.env.production
 
 # Logs
 logs
