@@ -21,11 +21,11 @@ async function bootstrap() {
       },
     }),
   );
-  app.enableCors({
-    origin: [process.env.CLIENT_URL],
-    credentials: true,
-    exposedHeaders: ['set-cookie'],
-  });
+  // app.enableCors({
+  //   origin: [process.env.CLIENT_URL],
+  //   credentials: true,
+  //   exposedHeaders: ['set-cookie'],
+  // });
 
   const config = new DocumentBuilder()
     .setTitle('Shop')
