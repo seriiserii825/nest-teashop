@@ -6,7 +6,6 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "start:server": "pm2 start dist/main.js --name nest-teashop && pm2 save && pm2 startup",
     "update:dev": "git pull && bun install && bun run build && pm2 restart nest-teashop",
     "update:prod": "git pull && bun install && bun run build:prod && pm2 restart nest-teashop",
     "build": "NODE_ENV=development && nest build",
