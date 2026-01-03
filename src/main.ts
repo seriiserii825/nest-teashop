@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
-import { expand } from 'dotenv-expand';
-import { config } from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { loadEnv, getEnv } from './config/env.helper';
 
-expand(config());
+// Загружаем env ПЕРВЫМ делом
+loadEnv();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,7 +22,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: [process.env.CLIENT_URL],
+    origin: [getEnv('CLIENT_URL')],
     credentials: true,
     exposedHeaders: ['set-cookie'],
   });
@@ -36,8 +36,8 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
 
-  console.log(`Server running on port ${process.env.PORT ?? 3344}`);
-  await app.listen(process.env.PORT ?? 3344);
+  console.log(`Server running on port ${getEnv('PORT')}`);
+  await app.listen(+getEnv('PORT'));
 }
 bootstrap().catch((err) => {
   console.error('Error during application bootstrap:', err);

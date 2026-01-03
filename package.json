@@ -6,8 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "update:dev": "git pull && bun install && bun run build && pm2 restart nest-teashop",
-    "update:prod": "git pull && bun install && bun run build:prod && pm2 restart nest-teashop",
+    "update": "git pull && bun install && bun run build:prod && pm2 restart nest-teashop",
     "build": "NODE_ENV=development && nest build",
     "build:prod": "NODE_ENV=production && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
