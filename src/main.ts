@@ -34,8 +34,9 @@ async function bootstrap() {
     .addTag('shop')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory);
 
+  console.log(`Server running on port ${process.env.PORT ?? 3344}`);
   await app.listen(process.env.PORT ?? 3344);
 }
 bootstrap().catch((err) => {
