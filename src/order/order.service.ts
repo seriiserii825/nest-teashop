@@ -39,7 +39,7 @@ export class OrderService {
   }
 
   findAll() {
-    return `This action returns all order`;
+    return this.orderRepository.find({ relations: ['orderItems'] });
   }
 
   findOne(id: number) {

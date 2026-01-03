@@ -41,7 +41,9 @@ export class Order {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, {
+    cascade: true,
+  })
   orderItems: OrderItem[];
 
   @Column()
