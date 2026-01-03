@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { expand } from 'dotenv-expand';
 import { config } from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 expand(config());
 
@@ -25,6 +26,15 @@ async function bootstrap() {
     credentials: true,
     exposedHeaders: ['set-cookie'],
   });
+
+  const config = new DocumentBuilder()
+    .setTitle('Shop')
+    .setDescription('The shop API description')
+    .setVersion('1.0')
+    .addTag('shop')
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3344);
 }
