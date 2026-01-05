@@ -33,6 +33,10 @@ export class UserService {
     return user;
   }
 
+  async checkByEmail(email: string): Promise<boolean> {
+    return this.userRepository.exists({ where: { email } });
+  }
+
   async getByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { email },
