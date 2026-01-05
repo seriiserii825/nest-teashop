@@ -34,7 +34,7 @@ export class StatisticService {
     ];
   }
 
-  private async getMiddleStatistics(storeId: string) {
+  async getMiddleStatistics(storeId: string) {
     const monthlySales = await this.calculateMonthlySales(storeId);
     const lastUsers = await this.getLastUsers(storeId);
     return { monthlySales, lastUsers };
@@ -117,7 +117,9 @@ export class StatisticService {
     const lastUsers = await this.userRepository
       .createQueryBuilder('user')
       .innerJoin('user.orders', 'order')
-      .innerJoin('order.items', 'item', 'item.storeId = :storeId', { storeId })
+      .innerJoin('order.orderItems', 'item', 'item.storeId = :storeId', {
+        storeId,
+      })
       .leftJoinAndSelect('user.orders', 'userOrders')
       .leftJoinAndSelect(
         'userOrders.items',
