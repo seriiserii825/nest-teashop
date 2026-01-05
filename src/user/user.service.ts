@@ -18,6 +18,7 @@ export class UserService {
   async getAll(): Promise<User[]> {
     const users = await this.userRepository.find({
       relations: ['stores', 'orders', 'favorites'],
+      order: { updatedAt: 'DESC' },
     });
     return users;
   }
