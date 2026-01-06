@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -40,13 +41,13 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    if (!req.cookies) throw new Error('No cookies in request');
+    if (!req.cookies) throw new BadRequestException('No cookies in request');
     const refreshTokenFromCookie = req.cookies[
       this.authService.REFRESH_TOKEN_NAME
     ] as string | undefined;
 
     if (!refreshTokenFromCookie) {
-      throw new Error('No refresh token in cookies');
+      throw new BadRequestException('No refresh token in cookies');
     }
 
     const { refreshToken, ...response } = await this.authService.getNewTokens(

@@ -112,7 +112,6 @@ export class AuthService {
     }
 
     const isPasswordValid = await verify(user.password, dto.password);
-    console.log('isPasswordValid', isPasswordValid);
     if (!isPasswordValid) {
       throw new BadRequestException('Invalid password');
     }
