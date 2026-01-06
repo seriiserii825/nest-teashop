@@ -26,7 +26,6 @@ export class ColorController {
     return this.colorService.create(storeId, createColorDto);
   }
 
-  @Auth()
   @Get()
   findAll(): Promise<Color[]> {
     return this.colorService.findAll();
