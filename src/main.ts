@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { loadEnv, getEnv } from './config/env.helper';
 
 // Загружаем env ПЕРВЫМ делом
@@ -26,15 +25,6 @@ async function bootstrap() {
     credentials: true,
     exposedHeaders: ['set-cookie'],
   });
-
-  const config = new DocumentBuilder()
-    .setTitle('Shop')
-    .setDescription('The shop API description')
-    .setVersion('1.0')
-    .addTag('shop')
-    .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, documentFactory);
 
   console.log(`Server running on port ${getEnv('PORT')}`);
   await app.listen(+getEnv('PORT'));
