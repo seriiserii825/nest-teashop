@@ -21,34 +21,20 @@ export class StatisticService {
     @InjectRepository(Review) private reviewRepository: Repository<Review>,
     @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
-  getMainStatistics(storeId: string) {
+  async getMainStatistics(storeId: string) {
+    const totalRevenue = await this.calculateTotalRevenue(storeId);
+    const productsCount = await this.countProducts(storeId);
+    const categoriesCount = await this.countCategories(storeId);
+    const averageRating = await this.calculateAverageRating(storeId);
+    const colorsCount = await this.countColors(storeId);
+    const reviewsCount = await this.countReviews(storeId);
     return [
-      {
-        id: 'revenue',
-        name: 'Total Revenue',
-        value: this.calculateTotalRevenue(storeId),
-      },
-      {
-        id: 'products',
-        name: 'Products Count',
-        value: this.countProducts(storeId),
-      },
-      {
-        id: 'categories',
-        name: 'Categories Count',
-        value: this.countCategories(storeId),
-      },
-      { id: 'colors', name: 'Colors Count', value: this.countColors(storeId) },
-      {
-        id: 'reviews',
-        name: 'Reviews Count',
-        value: this.countReviews(storeId),
-      },
-      {
-        id: 'rating',
-        name: 'Average Rating',
-        value: this.calculateAverageRating(storeId),
-      },
+      { id: 'revenue', name: 'Total Revenue', value: totalRevenue },
+      { id: 'products', name: 'Products Count', value: productsCount },
+      { id: 'categories', name: 'Categories Count', value: categoriesCount },
+      { id: 'colors', name: 'Colors Count', value: colorsCount },
+      { id: 'reviews', name: 'Reviews Count', value: reviewsCount },
+      { id: 'rating', name: 'Average Rating', value: averageRating },
     ];
   }
 
