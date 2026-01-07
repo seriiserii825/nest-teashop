@@ -150,7 +150,7 @@ export class StatisticService {
       )
       .orderBy('user.createdAt', 'DESC')
       .take(5)
-      .select(['user', 'userOrders', 'orderItem.price'])
+      .select(['user', 'userOrders', 'orderItem.price', 'orderItem.quantity'])
       .getMany();
 
     return lastUsers.map((user) => {
