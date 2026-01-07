@@ -10,6 +10,7 @@ import {
 import { Order } from './order.entity';
 import { Product } from './product.entity';
 import { Store } from './store.entity';
+import { User } from './user.entity';
 
 @Entity('order_items')
 export class OrderItem {
@@ -52,6 +53,7 @@ export class OrderItem {
   @Column({ name: 'user_id', nullable: true })
   userId: string;
 
-  @ManyToOne(() => Order, (order) => order.orderItems, { nullable: true })
-  user: Order;
+  @ManyToOne(() => User, (user) => user.orderItems, { nullable: true })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

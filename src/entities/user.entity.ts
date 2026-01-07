@@ -12,6 +12,7 @@ import { Store } from './store.entity';
 import { Review } from './review.entity';
 import { Order } from './order.entity';
 import { Product } from './product.entity';
+import { OrderItem } from './order-item.entity';
 
 @Entity('users')
 export class User {
@@ -44,6 +45,9 @@ export class User {
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.user)
+  orderItems: OrderItem[];
 
   @ManyToMany(() => Product)
   @JoinTable({
