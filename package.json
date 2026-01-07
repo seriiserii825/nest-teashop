@@ -26,7 +26,9 @@
     "migration:generate:name": "npm run typeorm -- migration:generate ./src/migrations/$npm_config_name -d ./src/config/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d ./src/config/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d ./src/config/data-source.ts",
-    "migration:show": "npm run typeorm -- migration:show -d ./src/config/data-source.ts"
+    "migration:show": "npm run typeorm -- migration:show -d ./src/config/data-source.ts",
+    "db:drop": "npm run typeorm -- schema:drop -d ./src/config/data-source.ts",
+    "db:reset": "npm run db:drop && npm run migration:run"
   },
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
