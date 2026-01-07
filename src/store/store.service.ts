@@ -7,7 +7,7 @@ import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from 'src/entities/store.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 @Injectable()
 export class StoreService {
@@ -43,7 +43,7 @@ export class StoreService {
     id: string,
     updateStoreDto: UpdateStoreDto,
   ): Promise<Store> {
-    await this.haveDuplicateTitle(userId, updateStoreDto.title);
+    await this.haveDuplicateTitle(userId, updateStoreDto.title, id);
 
     const store = await this.findById(id, userId);
 
@@ -56,9 +56,17 @@ export class StoreService {
     return this.storeRepository.remove(store);
   }
 
-  async haveDuplicateTitle(userId: string, title: string): Promise<void> {
+  async haveDuplicateTitle(
+    userId: string,
+    title: string,
+    store_id: string,
+  ): Promise<void> {
     const store = await this.storeRepository.findOne({
-      where: { user: { id: userId }, title },
+      where: {
+        user: { id: userId },
+        title,
+        id: store_id ? Not(store_id) : undefined,
+      },
     });
     if (store) {
       throw new BadRequestException('Store with this title already exists');
