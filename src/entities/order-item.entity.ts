@@ -48,4 +48,10 @@ export class OrderItem {
   @ManyToOne(() => Store, (store) => store.orderItems, { nullable: true })
   @JoinColumn({ name: 'store_id' })
   store: Store;
+
+  @Column({ name: 'user_id', nullable: true })
+  userId: string;
+
+  @ManyToOne(() => Order, (order) => order.orderItems, { nullable: true })
+  user: Order;
 }
