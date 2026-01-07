@@ -143,7 +143,7 @@ export class StatisticService {
       })
       .leftJoinAndSelect('user.orders', 'userOrders')
       .leftJoinAndSelect(
-        'userOrders.items',
+        'userOrders.orderItems',
         'orderItem',
         'orderItem.storeId = :storeId',
         { storeId },
