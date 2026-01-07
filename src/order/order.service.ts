@@ -17,17 +17,12 @@ export class OrderService {
       return {
         quantity: item.quantity,
         price: item.price,
-        product: {
-          id: item.productId,
-        },
-        store: {
-          id: item.storeId,
-        },
-        user: {
-          id: userId,
-        },
+        productId: item.productId,
+        storeId: item.storeId,
+        userId: userId, // Use the column directly, not the relation
       };
     });
+
     const total = order_items.reduce((sum, item) => {
       return sum + item.price * item.quantity;
     }, 0);
@@ -38,6 +33,7 @@ export class OrderService {
       orderItems: order_items,
       total: total,
     };
+
     return this.orderRepository.save(newOrder);
   }
 
