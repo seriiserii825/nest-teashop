@@ -11,7 +11,9 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { CurrentUser } from 'src/user/decorators/user.decorator';
+import { Auth } from 'src/auth/decorators/auth.decorator';
 
+@Auth()
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
