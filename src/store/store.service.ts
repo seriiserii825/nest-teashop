@@ -59,15 +59,19 @@ export class StoreService {
   async haveDuplicateTitle(
     userId: string,
     title: string,
-    store_id: string,
+    store_id?: string, // сделай опциональным
   ): Promise<void> {
-    const store = await this.storeRepository.findOne({
-      where: {
-        user: { id: userId },
-        title,
-        id: store_id ? Not(store_id) : undefined,
-      },
-    });
+    const where: any = {
+      user: { id: userId },
+      title,
+    };
+
+    if (store_id) {
+      where.id = Not(store_id);
+    }
+
+    const store = await this.storeRepository.findOne({ where });
+
     if (store) {
       throw new BadRequestException('Store with this title already exists');
     }
