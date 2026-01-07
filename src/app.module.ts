@@ -12,11 +12,17 @@ import { FileModule } from './file/file.module';
 import { ReviewModule } from './review/review.module';
 import { OrderModule } from './order/order.module';
 import { StatisticModule } from './statistic/statistic.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(dataSourceOptions),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
+    }),
     AuthModule,
     UserModule,
     ProductModule,
