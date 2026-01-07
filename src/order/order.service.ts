@@ -23,6 +23,9 @@ export class OrderService {
         store: {
           id: item.storeId,
         },
+        user: {
+          id: userId,
+        },
       };
     });
     const total = order_items.reduce((sum, item) => {
