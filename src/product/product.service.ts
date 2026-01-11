@@ -36,6 +36,7 @@ export class ProductService {
       order: { updatedAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
+      relations: ['category', 'color'],
     });
 
     return {
