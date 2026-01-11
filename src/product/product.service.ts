@@ -1,3 +1,4 @@
+import { Like } from 'typeorm';
 import {
   BadGatewayException,
   Injectable,
@@ -25,8 +26,13 @@ export class ProductService {
     return this.productRepository.save(newProduct);
   }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(page = 1, limit = 10, search?: string) {
+    // симуляция задержки
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const where = search ? { title: Like(`%${search}%`) } : {};
     const [products, total] = await this.productRepository.findAndCount({
+      where,
       order: { updatedAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,

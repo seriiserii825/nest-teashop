@@ -27,8 +27,12 @@ export class ProductController {
   }
 
   @Get()
-  findAll(@Query('page') page: number, @Query('limit') limit: number) {
-    return this.productService.findAll(page, limit);
+  findAll(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search') search?: string,
+  ) {
+    return this.productService.findAll(page, limit, search);
   }
 
   @Get('store/:storeId')
