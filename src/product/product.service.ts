@@ -25,10 +25,22 @@ export class ProductService {
     return this.productRepository.save(newProduct);
   }
 
-  findAll() {
-    return this.productRepository.find({
+  async findAll(page = 1, limit = 10) {
+    const [products, total] = await this.productRepository.findAndCount({
       order: { updatedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    return {
+      data: products,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   findAllByStoreID(storeId: string) {
