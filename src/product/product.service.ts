@@ -28,7 +28,7 @@ export class ProductService {
 
   async findAll(page = 1, limit = 10, search?: string) {
     // симуляция задержки
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
     const where = search ? { title: ILike(`%${search}%`) } : {};
     const [products, total] = await this.productRepository.findAndCount({
