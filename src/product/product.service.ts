@@ -1,4 +1,4 @@
-import { Like } from 'typeorm';
+import { ILike } from 'typeorm';
 import {
   BadGatewayException,
   Injectable,
@@ -30,7 +30,7 @@ export class ProductService {
     // симуляция задержки
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const where = search ? { title: Like(`%${search.toLowerCase()}%`) } : {};
+    const where = search ? { title: ILike(`%${search}%`) } : {};
     const [products, total] = await this.productRepository.findAndCount({
       where,
       order: { updatedAt: 'DESC' },
