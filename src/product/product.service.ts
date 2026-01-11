@@ -30,7 +30,7 @@ export class ProductService {
     // симуляция задержки
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const where = search ? { title: Like(`%${search}%`) } : {};
+    const where = search ? { title: Like(`%${search.toLowerCase()}%`) } : {};
     const [products, total] = await this.productRepository.findAndCount({
       where,
       order: { updatedAt: 'DESC' },
