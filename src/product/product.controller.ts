@@ -12,6 +12,7 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import { QueryProductDto } from './dto/query-product.dto';
 
 @Auth()
 @Controller('products')
@@ -27,12 +28,8 @@ export class ProductController {
   }
 
   @Get()
-  findAll(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
-    @Query('search') search?: string,
-  ) {
-    return this.productService.findAll(page, limit, search);
+  findAll(@Query() query: QueryProductDto) {
+    return this.productService.findAll(query);
   }
 
   @Get('store/:storeId')
