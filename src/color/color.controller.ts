@@ -12,13 +12,26 @@ import { CreateColorDto } from './dto/create-color.dto';
 import { UpdateColorDto } from './dto/update-color.dto';
 import { Color } from 'src/entities/color.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
+import {
+  ApiBody,
+  ApiConflictResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { colorsResponse, createColorResponse } from './response/color.response';
 
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
+@Auth()
 @Controller('colors')
 export class ColorController {
   constructor(private readonly colorService: ColorService) {}
 
-  @Auth()
   @Post(':storeId')
+  @ApiConflictResponse({
+    description: 'Color with this name already exists in the store',
+  })
+  @ApiOkResponse(createColorResponse)
   create(
     @Body() createColorDto: CreateColorDto,
     @Param('storeId') storeId: string,
@@ -27,24 +40,29 @@ export class ColorController {
   }
 
   @Get()
+  @ApiOkResponse(colorsResponse)
   findAll(): Promise<Color[]> {
     return this.colorService.findAll();
   }
 
-  @Auth()
   @Get(':colorId')
+  @ApiNotFoundResponse({ description: 'Color not found' })
+  @ApiOkResponse(createColorResponse)
   findById(@Param('colorId') colorId: string): Promise<Color> {
     return this.colorService.findById(colorId);
   }
 
-  @Auth()
   @Get('store/:storeId')
+  @ApiNotFoundResponse({ description: 'Color not found' })
+  @ApiOkResponse(createColorResponse)
   findByStoreId(@Param('storeId') storeId: string): Promise<Color[]> {
     return this.colorService.findByStoreId(storeId);
   }
 
-  @Auth()
   @Patch(':colorId')
+  @ApiBody({ type: UpdateColorDto })
+  @ApiNotFoundResponse({ description: 'Color not found' })
+  @ApiOkResponse(createColorResponse)
   update(
     @Param('colorId') colorId: string,
     @Body() updateColorDto: UpdateColorDto,
@@ -52,8 +70,9 @@ export class ColorController {
     return this.colorService.update(colorId, updateColorDto);
   }
 
-  @Auth()
   @Delete(':colorId')
+  @ApiNotFoundResponse({ description: 'Color not found' })
+  @ApiOkResponse({ description: 'Color deleted successfully' })
   remove(@Param('colorId') colorId: string) {
     return this.colorService.remove(colorId);
   }
