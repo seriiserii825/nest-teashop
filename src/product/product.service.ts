@@ -27,22 +27,47 @@ export class ProductService {
     return this.productRepository.save(newProduct);
   }
 
+  // src/products/products.service.ts
   async findAll(query: QueryProductDto) {
-    const { page = 1, limit = 10, search, sortKey, sortOrder } = query;
-    // симуляция задержки
+    const { page = 1, limit = 10, search, sortKey, sortOrder = 'desc' } = query;
+    // Симуляция задержки
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    const where = search ? { title: ILike(`%${search}%`) } : {};
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.color', 'color');
 
-    const order = this.buildOrderClause(sortKey, sortOrder);
+    // Поиск
+    if (search) {
+      queryBuilder.where('product.title ILIKE :search', {
+        search: `%${search}%`,
+      });
+    }
 
-    const [products, total] = await this.productRepository.findAndCount({
-      where,
-      order,
-      skip: (page - 1) * limit,
-      take: limit,
-      relations: ['category', 'color'],
-    });
+    // Сортировка
+    const sortMapping: Record<string, string> = {
+      title: 'product.title',
+      price: 'product.price',
+      color: 'color.name', // 👈 Правильный путь для связанной таблицы
+      category: 'category.title', // 👈 Правильный путь для связанной таблицы
+    };
+
+    if (sortKey && sortMapping[sortKey]) {
+      queryBuilder.orderBy(
+        sortMapping[sortKey],
+        sortOrder.toUpperCase() as 'ASC' | 'DESC',
+      );
+    }
+
+    // Дополнительная сортировка по дате
+    queryBuilder.addOrderBy('product.updatedAt', 'DESC');
+
+    // Пагинация
+    const [products, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
     return {
       data: products,
