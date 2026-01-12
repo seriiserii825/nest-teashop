@@ -48,8 +48,7 @@ export const loginResponse = {
   schema: {
     example: {
       user,
-      accessToken:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1OTRhYzcyMi0xNjU0LTRjZjQtYmMzZi0yZjFlZTZjMmEyNGIiLCJpYXQiOjE3NjgyNDUzMDAsImV4cCI6MTc2ODI1MjUwMH0.uA1cTCqbleR6oT0yU2z9nlCP0ABcvKIVWTVa-easBpE',
+      accessToken: 'my token',
     },
   },
 };

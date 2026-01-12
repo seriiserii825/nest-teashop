@@ -19,8 +19,10 @@ import {
   ApiBody,
   ApiNotFoundResponse,
   ApiOkResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { loginResponse, registerResponse } from './response/register.response';
+import { CustomApiUnauthorizedResponse } from 'src/decorators/api-response.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -34,8 +36,8 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  @HttpCode(200)
   @Post('login')
+  @HttpCode(200)
   @ApiNotFoundResponse({ description: 'Invalid credentials' })
   @ApiOkResponse(loginResponse)
   @ApiBody({ type: AuthLoginDto })
@@ -48,8 +50,11 @@ export class AuthController {
     return response;
   }
 
-  @HttpCode(200)
   @Post('login/access-token')
+  @HttpCode(200)
+  @ApiBadGatewayResponse({ description: 'No refresh token in cookies' })
+  @CustomApiUnauthorizedResponse()
+  @ApiOkResponse(loginResponse)
   async loginAccessToken(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -70,8 +75,9 @@ export class AuthController {
     return response;
   }
 
-  @HttpCode(200)
+  @CustomApiUnauthorizedResponse()
   @Post('logout')
+  @HttpCode(200)
   logout(@Res({ passthrough: true }) res: Response) {
     this.authService.removeRefreshTokenFromResponse(res);
   }
