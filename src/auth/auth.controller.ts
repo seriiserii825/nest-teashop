@@ -14,7 +14,13 @@ import type { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthLoginDto } from './dto/auth-login.dto';
-import { ApiBadGatewayResponse, ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBadGatewayResponse,
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { loginResponse, registerResponse } from './response/register.response';
 
 @Controller('auth')
 export class AuthController {
@@ -23,26 +29,16 @@ export class AuthController {
   @Post('register')
   @ApiBody({ type: AuthRegisterDto })
   @ApiBadGatewayResponse({ description: 'User already exists' })
-  @ApiOkResponse({
-    schema: {
-      example: {
-        user: {
-          id: 'f3b5e1c2-8c4d-4d2a-9f1e-2b6c3d4e5f6a',
-          createdAt: '2024-01-01T00:00:00.000Z',
-          updatedAt: '2024-01-01T00:00:00.000Z',
-          email: 'test@mail.com',
-          name: 'John Doe',
-          picture: '/uploads/no-user-image.png',
-        },
-      },
-    },
-  })
+  @ApiOkResponse(registerResponse)
   register(@Body() dto: AuthRegisterDto) {
     return this.authService.register(dto);
   }
 
   @HttpCode(200)
   @Post('login')
+  @ApiNotFoundResponse({ description: 'Invalid credentials' })
+  @ApiOkResponse(loginResponse)
+  @ApiBody({ type: AuthLoginDto })
   async login(
     @Body() dto: AuthLoginDto,
     @Res({ passthrough: true }) res: Response,

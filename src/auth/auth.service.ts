@@ -37,11 +37,6 @@ export class AuthService {
     private userService: UserService,
     private configService: ConfigService,
   ) {}
-  async login(dto: AuthLoginDto) {
-    const user = await this.validateUser(dto);
-    const tokens = this.issueTokens(user.id);
-    return { user, ...tokens };
-  }
   async register(dto: AuthRegisterDto) {
     const oldUser = await this.userService.checkByEmail(dto.email);
     if (oldUser) {
@@ -50,6 +45,12 @@ export class AuthService {
     const user = await this.userService.create(dto);
     const new_user = exclude(user, 'password');
     return { user: new_user };
+  }
+
+  async login(dto: AuthLoginDto) {
+    const user = await this.validateUser(dto);
+    const tokens = this.issueTokens(user.id);
+    return { user, ...tokens };
   }
 
   async getNewTokens(refreshToken: string): Promise<{
