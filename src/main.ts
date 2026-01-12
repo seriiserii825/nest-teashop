@@ -3,8 +3,8 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
 import { loadEnv, getEnv } from './config/env.helper';
-import { join } from 'path';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
+import { setupSwagger } from './config/swigger.config';
 
 // Загружаем env ПЕРВЫМ делом
 loadEnv();
@@ -28,8 +28,7 @@ async function bootstrap() {
     exposedHeaders: ['set-cookie'],
   });
   app.useGlobalFilters(new DatabaseExceptionFilter());
-  console.log('CWD:', process.cwd());
-  console.log('Uploads path:', join(process.cwd(), 'uploads'));
+  setupSwagger(app);
 
   console.log(`Server running on port ${getEnv('PORT')}`);
   await app.listen(+getEnv('PORT'));
