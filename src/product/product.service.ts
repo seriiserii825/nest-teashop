@@ -131,7 +131,7 @@ export class ProductService {
     const sortMapping: Record<string, string> = {
       title: 'title',
       price: 'price',
-      color: 'color.title', // Сортировка по связанной таблице
+      color: 'color.name', // Сортировка по связанной таблице
       category: 'category.title', // Сортировка по связанной таблице
     };
 
