@@ -1,4 +1,4 @@
-import { FindOptionsOrder, ILike } from 'typeorm';
+import { FindOptionsOrder } from 'typeorm';
 import {
   BadGatewayException,
   Injectable,
@@ -146,41 +146,5 @@ export class ProductService {
         `Product with title '${title}' already exists in this store.`,
       );
     }
-  }
-
-  private buildOrderClause(
-    sortKey?: string,
-    sortOrder: 'asc' | 'desc' = 'desc',
-  ): FindOptionsOrder<Product> {
-    // Маппинг ключей фронтенда на поля базы данных
-    const sortMapping: Record<string, string> = {
-      title: 'title',
-      price: 'price',
-      color: 'color.name', // Сортировка по связанной таблице
-      category: 'category.title', // Сортировка по связанной таблице
-    };
-
-    // Если передан валидный ключ сортировки
-    if (sortKey && sortMapping[sortKey]) {
-      const dbField = sortMapping[sortKey];
-
-      // Если это связанная таблица (содержит точку)
-      if (dbField.includes('.')) {
-        const [relation, field] = dbField.split('.');
-        return {
-          [relation]: { [field]: sortOrder },
-          updatedAt: 'DESC', // Дополнительная сортировка
-        } as FindOptionsOrder<Product>;
-      }
-
-      // Обычное поле
-      return {
-        [dbField]: sortOrder,
-        updatedAt: 'DESC',
-      } as FindOptionsOrder<Product>;
-    }
-
-    // Сортировка по умолчанию
-    return { updatedAt: 'DESC' } as FindOptionsOrder<Product>;
   }
 }
