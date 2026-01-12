@@ -3,9 +3,9 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { loadEnv, getEnv } from './config/env.helper';
 import { DatabaseExceptionFilter } from './common/filters/database-exception.filter';
-import { setupSwagger } from './config/swigger.config';
 import { setupValidation } from './config/validation.config';
 import setupCors from './config/cors.config';
+import { setupSwagger } from './config/swagger.config';
 
 // Загружаем env ПЕРВЫМ делом
 loadEnv();
