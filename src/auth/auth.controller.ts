@@ -19,7 +19,6 @@ import {
   ApiBody,
   ApiNotFoundResponse,
   ApiOkResponse,
-  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { loginResponse, registerResponse } from './response/register.response';
 import { CustomApiUnauthorizedResponse } from 'src/decorators/api-response.decorator';

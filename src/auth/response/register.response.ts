@@ -1,4 +1,4 @@
-const user = {
+const userWithRelations = {
   id: 'f3b5e1c2-8c4d-4d2a-9f1e-2b6c3d4e5f6a',
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
@@ -36,10 +36,40 @@ const user = {
   favorites: [],
 };
 
+export const user = {
+  id: 'f3b5e1c2-8c4d-4d2a-9f1e-2b6c3d4e5f6a',
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+  email: 'test@mail.com',
+  name: 'John Doe',
+  picture: '/uploads/no-user-image.png',
+};
+
+export const usersResponse = {
+  schema: {
+    example: [user],
+  },
+};
+
+export const userResponse = {
+  schema: {
+    example: user,
+  },
+};
+
+export const favoriteResponse = {
+  schema: {
+    example: {
+      message: 'Added to favorites',
+      isFavorite: true,
+    },
+  },
+};
+
 export const registerResponse = {
   schema: {
     example: {
-      user,
+      user: userWithRelations,
     },
   },
 };
@@ -47,7 +77,7 @@ export const registerResponse = {
 export const loginResponse = {
   schema: {
     example: {
-      user,
+      user: userWithRelations,
       accessToken: 'my token',
     },
   },

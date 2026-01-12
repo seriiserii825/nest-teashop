@@ -1,6 +1,5 @@
-import { FindOptionsOrder } from 'typeorm';
 import {
-  BadGatewayException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -142,7 +141,7 @@ export class ProductService {
       where: { storeId, title },
     });
     if (count > 0) {
-      throw new BadGatewayException(
+      throw new ConflictException(
         `Product with title '${title}' already exists in this store.`,
       );
     }

@@ -13,13 +13,26 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { QueryProductDto } from './dto/query-product.dto';
+import {
+  ApiBody,
+  ApiConflictResponse,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { createProductResponse } from './response/product.response';
 
+@ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Auth()
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post('store/:storeId')
+  @ApiBody({ type: CreateProductDto })
+  @ApiConflictResponse({
+    description: 'Product with this title already exists in the store',
+  })
+  @ApiOkResponse(createProductResponse)
   create(
     @Body() createProductDto: CreateProductDto,
     @Param('storeId') storeId: string,
