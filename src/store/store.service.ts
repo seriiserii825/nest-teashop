@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -73,7 +74,7 @@ export class StoreService {
     const store = await this.storeRepository.findOne({ where });
 
     if (store) {
-      throw new BadRequestException('Store with this title already exists');
+      throw new ConflictException('Store with this title already exists');
     }
   }
 }
