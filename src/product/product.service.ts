@@ -79,21 +79,57 @@ export class ProductService {
     };
   }
 
-  findAllByStoreID(storeId: string) {
-    return this.productRepository.find({
-      where: { storeId },
-      order: { updatedAt: 'DESC' },
-    });
-  }
+  async findAllByStoreID(storeId: string, query: QueryProductDto) {
+    const { page = 1, limit = 10, search, sortKey, sortOrder = 'desc' } = query;
+    // Симуляция задержки
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
-  findBySearchTerm(searchTerm: string): Promise<Product[]> {
-    return this.productRepository
+    const queryBuilder = this.productRepository
       .createQueryBuilder('product')
-      .where('product.title ILIKE :searchTerm', {
-        searchTerm: `%${searchTerm}%`,
-      })
-      .orderBy('product.updatedAt', 'DESC')
-      .getMany();
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.color', 'color');
+
+    // Поиск
+    if (search) {
+      queryBuilder.where('product.title ILIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    // Сортировка
+    const sortMapping: Record<string, string> = {
+      title: 'product.title',
+      price: 'product.price',
+      color: 'color.name', // 👈 Правильный путь для связанной таблицы
+      category: 'category.title', // 👈 Правильный путь для связанной таблицы
+    };
+
+    if (sortKey && sortMapping[sortKey]) {
+      queryBuilder.orderBy(
+        sortMapping[sortKey],
+        sortOrder.toUpperCase() as 'ASC' | 'DESC',
+      );
+    }
+
+    // Дополнительная сортировка по дате
+    queryBuilder.addOrderBy('product.updatedAt', 'DESC');
+
+    // Пагинация
+    const [products, total] = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .where('product.storeId = :storeId', { storeId })
+      .getManyAndCount();
+
+    return {
+      data: products,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findAllByCategoryID(categoryId: string) {

@@ -16,10 +16,16 @@ import { QueryProductDto } from './dto/query-product.dto';
 import {
   ApiBody,
   ApiConflictResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { createProductResponse } from './response/product.response';
+import {
+  createProductResponse,
+  getAllProductsResponse,
+  getProductByIdResponse,
+  getProductsByCategoryIdResponse,
+} from './response/product.response';
 
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Auth()
@@ -41,36 +47,42 @@ export class ProductController {
   }
 
   @Get()
+  @ApiOkResponse(getAllProductsResponse)
   findAll(@Query() query: QueryProductDto) {
     return this.productService.findAll(query);
   }
 
   @Get('store/:storeId')
-  findAllByStoreID(@Param('storeId') storeId: string) {
-    return this.productService.findAllByStoreID(storeId);
-  }
-
-  @Get('search/:searchTerm')
-  findBySearchTerm(@Param('searchTerm') searchTerm: string) {
-    return this.productService.findBySearchTerm(searchTerm);
+  @ApiOkResponse(getAllProductsResponse)
+  findAllByStoreID(
+    @Param('storeId') storeId: string,
+    @Query() query: QueryProductDto,
+  ) {
+    return this.productService.findAllByStoreID(storeId, query);
   }
 
   @Get('category/:categoryId')
+  @ApiOkResponse(getProductsByCategoryIdResponse)
   findAllByCategoryID(@Param('categoryId') categoryId: string) {
     return this.productService.findAllByCategoryID(categoryId);
   }
 
   @Get(':id')
+  @ApiNotFoundResponse({ description: 'Product not found' })
+  @ApiOkResponse(getProductByIdResponse)
   findById(@Param('id') id: string) {
     return this.productService.findById(id);
   }
 
   @Patch(':id')
+  @ApiBody({ type: CreateProductDto })
+  @ApiOkResponse(createProductResponse)
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
+  @ApiNotFoundResponse({ description: 'Product not found' })
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
   }
