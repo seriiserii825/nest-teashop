@@ -11,6 +11,7 @@ export function setupSwagger(app: INestApplication): void {
   SwaggerModule.setup('docs', app, document, {
     swaggerOptions: {
       docExpansion: 'none', // all collapsed
+      supportedSubmitMethods: [],
     },
   });
 }

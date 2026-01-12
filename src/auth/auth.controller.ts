@@ -14,12 +14,29 @@ import type { Request, Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 import { AuthLoginDto } from './dto/auth-login.dto';
+import { ApiBadGatewayResponse, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @ApiBody({ type: AuthRegisterDto })
+  @ApiBadGatewayResponse({ description: 'User already exists' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        user: {
+          id: 'f3b5e1c2-8c4d-4d2a-9f1e-2b6c3d4e5f6a',
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+          email: 'test@mail.com',
+          name: 'John Doe',
+          picture: '/uploads/no-user-image.png',
+        },
+      },
+    },
+  })
   register(@Body() dto: AuthRegisterDto) {
     return this.authService.register(dto);
   }
