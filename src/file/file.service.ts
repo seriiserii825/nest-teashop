@@ -8,13 +8,11 @@ import { writeFile } from 'fs/promises';
 export class FileService {
   async uploadFiles(files: Express.Multer.File[], folder: string = 'products') {
     const uploadedFolder = `${path}/uploads/${folder}`;
-    console.log('uploadedFolder', uploadedFolder);
     await ensureDir(uploadedFolder);
 
     const response: IFileResponse[] = await Promise.all(
       files.map(async (file) => {
         const originalName = `${Date.now()}-${file.originalname}`;
-        console.log('originalName', originalName);
         try {
           await writeFile(`${uploadedFolder}/${originalName}`, file.buffer);
           return {
