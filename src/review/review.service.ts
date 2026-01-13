@@ -26,11 +26,15 @@ export class ReviewService {
     });
   }
 
-  findByStoreId(storeId: string) {
-    return this.reviewRepository.find({
+  async findByStoreId(storeId: string) {
+    const review = await this.reviewRepository.find({
       where: { storeId },
       order: { updatedAt: 'DESC' },
     });
+    if (!review) {
+      throw new NotFoundException('Reviews not found for this store');
+    }
+    return review;
   }
 
   async findById(id: string) {
