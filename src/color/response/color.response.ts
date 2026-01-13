@@ -1,4 +1,4 @@
-const color = {
+export const color = {
   id: 'ac34e7d9-784a-4aef-9bdf-5334a7225400',
   createdAt: '2026-01-12T18:34:48.004Z',
   updatedAt: '2026-01-12T18:34:48.004Z',

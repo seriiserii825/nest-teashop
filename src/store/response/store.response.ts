@@ -1,4 +1,4 @@
-const store = {
+export const store = {
   id: '28aa0d16-e0b1-4754-b68f-7f076228d281',
   createdAt: '2026-01-12T18:10:25.728Z',
   updatedAt: '2026-01-12T18:10:25.728Z',
