@@ -37,7 +37,7 @@ export class ColorController {
   @ApiOkResponse(createColorResponse)
   create(
     @Body() createColorDto: CreateColorDto,
-    @Param('store/:storeId') storeId: string,
+    @Param('storeId') storeId: string,
   ): Promise<Color> {
     return this.colorService.create(storeId, createColorDto);
   }
