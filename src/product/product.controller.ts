@@ -54,6 +54,7 @@ export class ProductController {
 
   @Get('store/:storeId')
   @ApiOkResponse(getAllProductsResponse)
+  @ApiBody({ type: QueryProductDto })
   findAllByStoreID(
     @Param('storeId') storeId: string,
     @Query() query: QueryProductDto,

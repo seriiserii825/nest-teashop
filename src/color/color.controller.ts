@@ -57,7 +57,7 @@ export class ColorController {
 
   @Get('store/:storeId')
   @ApiNotFoundResponse({ description: 'Color not found' })
-  @ApiOkResponse(createColorResponse)
+  @ApiOkResponse(colorsResponse)
   findByStoreId(
     @Param('storeId') storeId: string,
     @Query() query: QueryColorDto,
