@@ -41,7 +41,7 @@ export class ColorService {
 
     // Сортировка
     const sortMapping: Record<string, string> = {
-      name: 'name.title',
+      name: 'color.name',
     };
 
     if (sortKey && sortMapping[sortKey]) {
