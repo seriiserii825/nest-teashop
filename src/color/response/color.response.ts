@@ -15,6 +15,14 @@ export const createColorResponse = {
 
 export const colorsResponse = {
   schema: {
-    example: [color, color, color],
+    example: {
+      data: [color],
+      meta: {
+        total: 1,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      },
+    },
   },
 };

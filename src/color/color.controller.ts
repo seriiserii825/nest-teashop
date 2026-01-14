@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ColorService } from './color.service';
 import { CreateColorDto } from './dto/create-color.dto';
@@ -20,6 +21,8 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { colorsResponse, createColorResponse } from './response/color.response';
+import { QueryColorDto } from './dto/query-color.dto';
+import { IColorResponse } from './interfaces/IColorResponse';
 
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Auth()
@@ -55,8 +58,11 @@ export class ColorController {
   @Get('store/:storeId')
   @ApiNotFoundResponse({ description: 'Color not found' })
   @ApiOkResponse(createColorResponse)
-  findByStoreId(@Param('storeId') storeId: string): Promise<Color[]> {
-    return this.colorService.findByStoreId(storeId);
+  findByStoreId(
+    @Param('storeId') storeId: string,
+    @Query() query: QueryColorDto,
+  ): Promise<IColorResponse> {
+    return this.colorService.findByStoreId(storeId, query);
   }
 
   @Patch(':colorId')
