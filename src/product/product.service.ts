@@ -10,11 +10,10 @@ import {
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, QueryRunner } from 'typeorm';
 import { Product } from 'src/entities/product.entity';
 import { QueryProductDto } from './dto/query-product.dto';
 import { FileService } from 'src/file/file.service';
-
 import IFileResponse from '../file/interfaces/IFileResponse';
 
 @Injectable()
@@ -32,64 +31,26 @@ export class ProductService {
   ) {
     await this.checkDuplicateTitleInStore(storeId, createProductDto.title);
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
+    return this.executeInTransaction(async (queryRunner) => {
+      // Создаем и сохраняем продукт без изображений
       const newProduct = this.productRepository.create({
         ...createProductDto,
         storeId,
         images: [],
       });
-
       const savedProduct = await queryRunner.manager.save(newProduct);
 
-      let uploadedImages: IFileResponse[] = [];
-
-      if (files && files.length > 0) {
-        try {
-          uploadedImages = await this.fileService.uploadFiles(
-            files,
-            `products/${savedProduct.id}`,
-          );
-        } catch (fileError) {
-          console.error('File upload error:', fileError);
-
-          // Бросаем ошибку, которая будет перехвачена внешним catch
-          const errorMessage =
-            fileError instanceof Error ? fileError.message : 'Unknown error';
-          throw new BadRequestException(`File upload failed: ${errorMessage}`);
-        }
-      }
-
-      savedProduct.images = uploadedImages.map((img) => img.url);
-      const updatedProduct = await queryRunner.manager.save(savedProduct);
-
-      await queryRunner.commitTransaction();
-
-      return updatedProduct;
-    } catch (error) {
-      // Откатываем транзакцию при ЛЮБОЙ ошибке
-      await queryRunner.rollbackTransaction();
-
-      // Если это уже BadRequestException, просто пробрасываем дальше
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      // Для других ошибок создаем новое исключение
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(
-        `Failed to create product: ${errorMessage}`,
+      // Загружаем изображения
+      const uploadedImages = await this.uploadProductImages(
+        files,
+        savedProduct.id,
       );
-    } finally {
-      await queryRunner.release();
-    }
-  }
 
-  // product.service.ts
+      // Обновляем продукт с изображениями
+      savedProduct.images = uploadedImages.map((img) => img.url);
+      return queryRunner.manager.save(savedProduct);
+    });
+  }
 
   async update(
     id: string,
@@ -110,68 +71,67 @@ export class ProductService {
       );
     }
 
+    return this.executeInTransaction(async (queryRunner) => {
+      // Обновляем основные поля
+      this.updateProductFields(product, updateProductDto);
+
+      // Обрабатываем изображения
+      const { imagesToKeep, imagesToDelete } = this.processImageUpdates(
+        product.images,
+        updateProductDto.oldImages,
+      );
+
+      // Загружаем новые изображения
+      const newUploadedImages = await this.uploadProductImages(
+        files,
+        product.id,
+      );
+
+      // Обновляем массив изображений
+      product.images = [
+        ...imagesToKeep,
+        ...newUploadedImages.map((img) => img.url),
+      ];
+
+      // Сохраняем продукт
+      const updatedProduct = await queryRunner.manager.save(product);
+
+      // Удаляем старые файлы после успешного сохранения
+      if (imagesToDelete.length > 0) {
+        await this.deleteImageFiles(imagesToDelete);
+      }
+
+      return updatedProduct;
+    });
+  }
+
+  async remove(id: string) {
+    const product = await this.findById(id);
+
+    // Удаляем все изображения продукта
+    if (product.images.length > 0) {
+      await this.deleteImageFiles(product.images);
+    }
+
+    return this.productRepository.delete(id);
+  }
+
+  // ==================== ПРИВАТНЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ====================
+
+  /**
+   * Выполняет операцию в транзакции с автоматической обработкой ошибок
+   */
+  private async executeInTransaction<T>(
+    operation: (queryRunner: QueryRunner) => Promise<T>,
+  ): Promise<T> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Обновляем основные поля (только те, что пришли)
-      if (updateProductDto.title !== undefined)
-        product.title = updateProductDto.title;
-      if (updateProductDto.description !== undefined)
-        product.description = updateProductDto.description;
-      if (updateProductDto.price !== undefined)
-        product.price = updateProductDto.price;
-      if (updateProductDto.categoryId !== undefined)
-        product.categoryId = updateProductDto.categoryId;
-      if (updateProductDto.colorId !== undefined)
-        product.colorId = updateProductDto.colorId;
-
-      // Обрабатываем изображения
-      const oldImages = updateProductDto.oldImages || [];
-      const imagesToDelete = product.images.filter(
-        (img) => !oldImages.includes(img),
-      );
-
-      console.log('Current product.images:', product.images); // Для отладки
-      console.log('oldImages from request:', oldImages); // Для отладки
-      console.log('imagesToDelete:', imagesToDelete); // Для отладки
-
-      // Загружаем новые изображения, если есть
-      let newUploadedImages: IFileResponse[] = [];
-      if (files && files.length > 0) {
-        try {
-          newUploadedImages = await this.fileService.uploadFiles(
-            files,
-            `products/${product.id}`,
-          );
-        } catch (fileError) {
-          console.error('File upload error:', fileError);
-          const errorMessage =
-            fileError instanceof Error ? fileError.message : 'Unknown error';
-          throw new BadRequestException(`File upload failed: ${errorMessage}`); // ✅ Исправлен синтаксис
-        }
-      }
-
-      // Объединяем старые и новые изображения
-      product.images = [
-        ...oldImages,
-        ...newUploadedImages.map((img) => img.url),
-      ];
-
-      console.log('New product.images:', product.images); // Для отладки
-
-      // Сохраняем продукт
-      const updatedProduct = await queryRunner.manager.save(product);
-
-      // Удаляем файлы, которые больше не нужны (после успешного сохранения)
-      if (imagesToDelete.length > 0) {
-        await this.deleteImageFiles(imagesToDelete);
-      }
-
+      const result = await operation(queryRunner);
       await queryRunner.commitTransaction();
-
-      return updatedProduct;
+      return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
 
@@ -181,169 +141,193 @@ export class ProductService {
 
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(
-        `Failed to update product: ${errorMessage}`,
-      );
+      throw new BadRequestException(`Operation failed: ${errorMessage}`);
     } finally {
       await queryRunner.release();
     }
   }
 
-  // Вспомогательный метод для удаления файлов
-  private async deleteImageFiles(imageUrls: string[]) {
+  /**
+   * Загружает изображения продукта
+   */
+  private async uploadProductImages(
+    files: Express.Multer.File[] | undefined,
+    productId: string,
+  ): Promise<IFileResponse[]> {
+    if (!files || files.length === 0) {
+      return [];
+    }
+
+    try {
+      return await this.fileService.uploadFiles(files, `products/${productId}`);
+    } catch (fileError) {
+      const errorMessage =
+        fileError instanceof Error ? fileError.message : 'Unknown error';
+      throw new BadRequestException(`File upload failed: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Обновляет поля продукта из DTO
+   */
+  private updateProductFields(
+    product: Product,
+    updateDto: UpdateProductDto,
+  ): void {
+    if (updateDto.title !== undefined) product.title = updateDto.title;
+    if (updateDto.description !== undefined)
+      product.description = updateDto.description;
+    if (updateDto.price !== undefined) product.price = updateDto.price;
+    if (updateDto.categoryId !== undefined)
+      product.categoryId = updateDto.categoryId;
+    if (updateDto.colorId !== undefined) product.colorId = updateDto.colorId;
+  }
+
+  /**
+   * Определяет какие изображения оставить, а какие удалить
+   */
+  private processImageUpdates(
+    currentImages: string[],
+    oldImages?: string[],
+  ): { imagesToKeep: string[]; imagesToDelete: string[] } {
+    const imagesToKeep = oldImages || [];
+    const imagesToDelete = currentImages.filter(
+      (img) => !imagesToKeep.includes(img),
+    );
+
+    return { imagesToKeep, imagesToDelete };
+  }
+
+  /**
+   * Удаляет файлы изображений с диска
+   */
+  private async deleteImageFiles(imageUrls: string[]): Promise<void> {
     const deletePromises = imageUrls.map(async (url) => {
       try {
-        // Преобразуем URL в путь к файлу
         const filePath = join(rootPath, url);
         await unlink(filePath);
-        console.log(`Deleted image: ${filePath}`); // ✅ Исправлен синтаксис
+        console.log(`Deleted image: ${filePath}`);
       } catch (error) {
-        // Не бросаем ошибку, просто логируем
-        console.error(`Failed to delete image ${url}:`, error); // ✅ Исправлен синтаксис
+        console.error(`Failed to delete image ${url}:`, error);
       }
     });
 
     await Promise.allSettled(deletePromises);
   }
 
-  // src/products/products.service.ts
+  // ==================== ПУБЛИЧНЫЕ МЕТОДЫ ПОИСКА ====================
+
   async findAll(query: QueryProductDto) {
     const { page = 1, limit = 10, search, sortKey, sortOrder = 'desc' } = query;
-    // Симуляция задержки
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    const queryBuilder = this.productRepository
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.color', 'color');
+    const queryBuilder = this.buildProductQuery(search, sortKey, sortOrder);
 
-    // Поиск
-    if (search) {
-      queryBuilder.where('product.title ILIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    // Сортировка
-    const sortMapping: Record<string, string> = {
-      title: 'product.title',
-      price: 'product.price',
-      color: 'color.name', // 👈 Правильный путь для связанной таблицы
-      category: 'category.title', // 👈 Правильный путь для связанной таблицы
-    };
-
-    if (sortKey && sortMapping[sortKey]) {
-      queryBuilder.orderBy(
-        sortMapping[sortKey],
-        sortOrder.toUpperCase() as 'ASC' | 'DESC',
-      );
-    }
-
-    // Дополнительная сортировка по дате
-    queryBuilder.addOrderBy('product.updatedAt', 'DESC');
-
-    // Пагинация
     const [products, total] = await queryBuilder
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
 
-    return {
-      data: products,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return this.buildPaginatedResponse(products, total, page, limit);
   }
 
   async findAllByStoreID(storeId: string, query: QueryProductDto) {
     const { page = 1, limit = 10, search, sortKey, sortOrder = 'desc' } = query;
-    // Симуляция задержки
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    const queryBuilder = this.productRepository
-      .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.color', 'color');
+    const queryBuilder = this.buildProductQuery(search, sortKey, sortOrder);
+    queryBuilder.andWhere('product.storeId = :storeId', { storeId });
 
-    // Поиск
-    if (search) {
-      queryBuilder.where('product.title ILIKE :search', {
-        search: `%${search}%`,
-      });
-    }
-
-    // Сортировка
-    const sortMapping: Record<string, string> = {
-      title: 'product.title',
-      price: 'product.price',
-      color: 'color.name', // 👈 Правильный путь для связанной таблицы
-      category: 'category.title', // 👈 Правильный путь для связанной таблицы
-    };
-
-    if (sortKey && sortMapping[sortKey]) {
-      queryBuilder.orderBy(
-        sortMapping[sortKey],
-        sortOrder.toUpperCase() as 'ASC' | 'DESC',
-      );
-    }
-
-    // Дополнительная сортировка по дате
-    queryBuilder.addOrderBy('product.updatedAt', 'DESC');
-
-    // Пагинация
     const [products, total] = await queryBuilder
       .skip((page - 1) * limit)
       .take(limit)
-      .where('product.storeId = :storeId', { storeId })
       .getManyAndCount();
 
-    return {
-      data: products,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    return this.buildPaginatedResponse(products, total, page, limit);
   }
 
   async findAllByCategoryID(categoryId: string) {
-    const products = await this.productRepository.find({
+    return this.productRepository.find({
       where: { categoryId },
       order: { updatedAt: 'DESC' },
     });
-
-    return products;
   }
 
   async findById(id: string) {
     const product = await this.productRepository.findOne({
-      where: { id: id },
+      where: { id },
     });
+
     if (!product) {
       throw new NotFoundException(`Product with ID '${id}' not found.`);
     }
-    return product;
-  }
 
-  async remove(id: string) {
-    await this.findById(id);
-    return this.productRepository.delete(id);
+    return product;
   }
 
   async checkDuplicateTitleInStore(storeId: string, title: string) {
     const count = await this.productRepository.count({
       where: { storeId, title },
     });
+
     if (count > 0) {
       throw new ConflictException(
         `Product with title '${title}' already exists in this store.`,
       );
     }
+  }
+
+  // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ЗАПРОСОВ ====================
+
+  private buildProductQuery(
+    search?: string,
+    sortKey?: string,
+    sortOrder: string = 'desc',
+  ) {
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.color', 'color');
+
+    if (search) {
+      queryBuilder.where('product.title ILIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    const sortMapping: Record<string, string> = {
+      title: 'product.title',
+      price: 'product.price',
+      color: 'color.name',
+      category: 'category.title',
+    };
+
+    if (sortKey && sortMapping[sortKey]) {
+      queryBuilder.orderBy(
+        sortMapping[sortKey],
+        sortOrder.toUpperCase() as 'ASC' | 'DESC',
+      );
+    }
+
+    queryBuilder.addOrderBy('product.updatedAt', 'DESC');
+
+    return queryBuilder;
+  }
+
+  private buildPaginatedResponse(
+    data: Product[],
+    total: number,
+    page: number,
+    limit: number,
+  ) {
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }
