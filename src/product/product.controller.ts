@@ -54,6 +54,19 @@ export class ProductController {
     return this.productService.create(storeId, createProductDto, files);
   }
 
+  @Patch(':id')
+  @ApiBody(createProductSchema)
+  @UseInterceptors(FilesInterceptor('images', 10)) // максимум 10 файлов
+  @ApiConsumes('multipart/form-data')
+  @ApiOkResponse(createProductResponse)
+  update(
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    return this.productService.update(id, updateProductDto, files);
+  }
+
   @Get()
   @ApiOkResponse(getAllProductsResponse)
   findAll(@Query() query: QueryProductDto) {
@@ -81,13 +94,6 @@ export class ProductController {
   @ApiOkResponse(getProductByIdResponse)
   findById(@Param('id') id: string) {
     return this.productService.findById(id);
-  }
-
-  @Patch(':id')
-  @ApiBody({ type: CreateProductDto })
-  @ApiOkResponse(createProductResponse)
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(id, updateProductDto);
   }
 
   @Delete(':id')
