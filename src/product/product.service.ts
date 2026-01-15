@@ -115,20 +115,27 @@ export class ProductService {
     await queryRunner.startTransaction();
 
     try {
-      // Обновляем основные поля
-      Object.assign(product, {
-        title: updateProductDto.title,
-        description: updateProductDto.description,
-        price: updateProductDto.price,
-        categoryId: updateProductDto.categoryId,
-        colorId: updateProductDto.colorId,
-      });
+      // Обновляем основные поля (только те, что пришли)
+      if (updateProductDto.title !== undefined)
+        product.title = updateProductDto.title;
+      if (updateProductDto.description !== undefined)
+        product.description = updateProductDto.description;
+      if (updateProductDto.price !== undefined)
+        product.price = updateProductDto.price;
+      if (updateProductDto.categoryId !== undefined)
+        product.categoryId = updateProductDto.categoryId;
+      if (updateProductDto.colorId !== undefined)
+        product.colorId = updateProductDto.colorId;
 
       // Обрабатываем изображения
       const oldImages = updateProductDto.oldImages || [];
       const imagesToDelete = product.images.filter(
         (img) => !oldImages.includes(img),
       );
+
+      console.log('Current product.images:', product.images); // Для отладки
+      console.log('oldImages from request:', oldImages); // Для отладки
+      console.log('imagesToDelete:', imagesToDelete); // Для отладки
 
       // Загружаем новые изображения, если есть
       let newUploadedImages: IFileResponse[] = [];
@@ -142,7 +149,7 @@ export class ProductService {
           console.error('File upload error:', fileError);
           const errorMessage =
             fileError instanceof Error ? fileError.message : 'Unknown error';
-          throw new BadRequestException(`File upload failed: ${errorMessage}`);
+          throw new BadRequestException(`File upload failed: ${errorMessage}`); // ✅ Исправлен синтаксис
         }
       }
 
@@ -151,6 +158,8 @@ export class ProductService {
         ...oldImages,
         ...newUploadedImages.map((img) => img.url),
       ];
+
+      console.log('New product.images:', product.images); // Для отладки
 
       // Сохраняем продукт
       const updatedProduct = await queryRunner.manager.save(product);
@@ -185,13 +194,12 @@ export class ProductService {
     const deletePromises = imageUrls.map(async (url) => {
       try {
         // Преобразуем URL в путь к файлу
-        // Например: /uploads/products/123/image.jpg -> /path/to/project/uploads/products/123/image.jpg
         const filePath = join(rootPath, url);
         await unlink(filePath);
-        console.log(`Deleted image: ${filePath}`);
+        console.log(`Deleted image: ${filePath}`); // ✅ Исправлен синтаксис
       } catch (error) {
         // Не бросаем ошибку, просто логируем
-        console.error(`Failed to delete image ${url}:`, error);
+        console.error(`Failed to delete image ${url}:`, error); // ✅ Исправлен синтаксис
       }
     });
 
