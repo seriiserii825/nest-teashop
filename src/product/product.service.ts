@@ -18,7 +18,7 @@ import IFileResponse from '../file/interfaces/IFileResponse';
 export class ProductService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
-    @InjectRepository(Product) private readonly fileService: FileService,
+    private readonly fileService: FileService,
     private readonly dataSource: DataSource,
   ) {}
 
