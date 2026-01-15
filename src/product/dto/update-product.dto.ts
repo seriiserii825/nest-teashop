@@ -1,12 +1,40 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateProductDto } from './create-product.dto';
+// dto/update-product.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class UpdateProductDto extends PartialType(CreateProductDto) {
-  @ApiProperty({ required: false, type: [String] })
+export class UpdateProductDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  colorId?: string;
+
+  @ApiProperty({
+    required: false,
+    type: [String],
+    description: 'Array of existing image URLs to keep',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  oldImages?: string[]; // Массив URL-ов старых изображений для сохранения
+  oldImages?: string[];
 }
