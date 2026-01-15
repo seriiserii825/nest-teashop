@@ -13,5 +13,6 @@ import { path } from 'app-root-path';
   ],
   controllers: [FileController],
   providers: [FileService],
+  exports: [FileService],
 })
 export class FileModule {}
