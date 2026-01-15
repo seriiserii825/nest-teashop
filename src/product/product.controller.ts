@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -16,6 +18,7 @@ import { QueryProductDto } from './dto/query-product.dto';
 import {
   ApiBody,
   ApiConflictResponse,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiUnauthorizedResponse,
@@ -26,6 +29,8 @@ import {
   getProductByIdResponse,
   getProductsByCategoryIdResponse,
 } from './response/product.response';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { createProductSchema } from './schema/create-product.schema';
 
 @ApiUnauthorizedResponse({ description: 'Unauthorized' })
 @Auth()
@@ -34,16 +39,19 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post('store/:storeId')
-  @ApiBody({ type: CreateProductDto })
+  @ApiBody(createProductSchema)
   @ApiConflictResponse({
     description: 'Product with this title already exists in the store',
   })
   @ApiOkResponse(createProductResponse)
+  @UseInterceptors(FilesInterceptor('images', 10)) // максимум 10 файлов
+  @ApiConsumes('multipart/form-data')
   create(
     @Body() createProductDto: CreateProductDto,
     @Param('storeId') storeId: string,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.productService.create(storeId, createProductDto);
+    return this.productService.create(storeId, createProductDto, files);
   }
 
   @Get()

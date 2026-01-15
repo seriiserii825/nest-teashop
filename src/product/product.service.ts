@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -6,26 +7,84 @@ import {
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Product } from 'src/entities/product.entity';
 import { QueryProductDto } from './dto/query-product.dto';
+import { FileService } from 'src/file/file.service';
+
+import IFileResponse from '../file/interfaces/IFileResponse';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product) private productRepository: Repository<Product>,
+    @InjectRepository(Product) private readonly fileService: FileService,
+    private readonly dataSource: DataSource,
   ) {}
 
-  async create(storeId: string, createProductDto: CreateProductDto) {
+  async create(
+    storeId: string,
+    createProductDto: CreateProductDto,
+    files: Express.Multer.File[],
+  ) {
     await this.checkDuplicateTitleInStore(storeId, createProductDto.title);
 
-    const newProduct = this.productRepository.create({
-      ...createProductDto,
-      storeId,
-    });
-    return this.productRepository.save(newProduct);
-  }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
+    try {
+      const newProduct = this.productRepository.create({
+        ...createProductDto,
+        storeId,
+        images: [],
+      });
+
+      const savedProduct = await queryRunner.manager.save(newProduct);
+
+      let uploadedImages: IFileResponse[] = [];
+
+      if (files && files.length > 0) {
+        try {
+          uploadedImages = await this.fileService.uploadFiles(
+            files,
+            `products/${savedProduct.id}`,
+          );
+        } catch (fileError) {
+          console.error('File upload error:', fileError);
+
+          // Бросаем ошибку, которая будет перехвачена внешним catch
+          const errorMessage =
+            fileError instanceof Error ? fileError.message : 'Unknown error';
+          throw new BadRequestException(`File upload failed: ${errorMessage}`);
+        }
+      }
+
+      savedProduct.images = uploadedImages.map((img) => img.url);
+      const updatedProduct = await queryRunner.manager.save(savedProduct);
+
+      await queryRunner.commitTransaction();
+
+      return updatedProduct;
+    } catch (error) {
+      // Откатываем транзакцию при ЛЮБОЙ ошибке
+      await queryRunner.rollbackTransaction();
+
+      // Если это уже BadRequestException, просто пробрасываем дальше
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      // Для других ошибок создаем новое исключение
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(
+        `Failed to create product: ${errorMessage}`,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
   // src/products/products.service.ts
   async findAll(query: QueryProductDto) {
     const { page = 1, limit = 10, search, sortKey, sortOrder = 'desc' } = query;
